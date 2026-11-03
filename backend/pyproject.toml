@@ -1,0 +1,123 @@
+[project]
+name = "ember"
+version = "0.1.0"
+description = "Ember backend: API, realtime and worker processes."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "pgvector>=0.3",
+    "redis>=5.2",
+    "taskiq>=0.11",
+    "taskiq-redis>=1.0",
+    "pyjwt[crypto]>=2.10",
+    "httpx>=0.28",
+    "structlog>=24.4",
+    "opentelemetry-api>=1.28",
+    "opentelemetry-sdk>=1.28",
+    "opentelemetry-exporter-otlp>=1.28",
+    "opentelemetry-instrumentation-fastapi>=0.49b0",
+    "langfuse>=2.54,<3",
+    "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "testcontainers[postgres,redis]>=4.8",
+    "import-linter>=2.1",
+    "pre-commit>=4.0",
+    "poethepoet>=0.31",
+    "types-pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ember"]
+
+# --- ruff -------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "T20", "SIM", "RUF"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"scripts/**" = ["S603", "S607"]  # dev scripts run fixed git/python commands
+
+# --- mypy -------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["ember"]
+plugins = ["pydantic.mypy"]
+
+# --- pytest -----------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "integration: needs Docker (Postgres/Redis via testcontainers)",
+    "live: calls a real external provider; skipped in CI",
+]
+
+# --- import-linter ----------------------------------------------------------
+# AGENTS.md §2 boundary rules. The "modules only import each other via public"
+# contract is added with scripts/new_module.py in F4, when the first module exists.
+[tool.importlinter]
+root_package = "ember"
+
+[[tool.importlinter.contracts]]
+name = "core and adapters never import modules"
+type = "forbidden"
+source_modules = ["ember.core", "ember.adapters"]
+forbidden_modules = ["ember.modules"]
+
+# --- poethepoet -------------------------------------------------------------
+# Run from backend/:  uv run poe <task>   (list them with: uv run poe)
+[tool.poe.tasks]
+dev = { cmd = "docker compose -f ../infra/docker-compose.yml up -d", help = "Start local Postgres and Redis" }
+down = { cmd = "docker compose -f ../infra/docker-compose.yml down", help = "Stop local Postgres and Redis" }
+api = { cmd = "uvicorn --factory ember.entrypoints.api:create_app --reload --port 8000", help = "Run the HTTP API" }
+realtime = { cmd = "uvicorn --factory ember.entrypoints.realtime:create_app --reload --port 8001", help = "Run the live-call WebSocket service" }
+worker = { cmd = "taskiq worker ember.entrypoints.worker:broker --fs-discover", help = "Run the background worker" }
+test = { cmd = "pytest", help = "Run the tests" }
+migrate = { cmd = "alembic upgrade head", help = "Apply database migrations" }
+openapi = { cmd = "python scripts/export_openapi.py", help = "Regenerate contracts/ from the app (script arrives in F8)" }
+openapi-check = { cmd = "python scripts/check_openapi_drift.py", help = "Fail if contracts/ is out of date" }
+
+[tool.poe.tasks.lint]
+help = "ruff check and format check"
+sequence = [
+    { cmd = "ruff check ." },
+    { cmd = "ruff format --check ." },
+]
+
+[tool.poe.tasks.types]
+cmd = "mypy"
+help = "mypy --strict on src/"
+
+[tool.poe.tasks.imports]
+cmd = "lint-imports"
+help = "import-linter module boundary rules"
+
+[tool.poe.tasks.check]
+help = "lint + types + imports + tests + OpenAPI drift (run before opening a PR)"
+sequence = ["lint", "types", "imports", "test", "openapi-check"]
