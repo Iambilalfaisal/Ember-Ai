@@ -1,0 +1,55 @@
+"""HTTP API entrypoint. Wiring only: no business logic lives here."""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from functools import partial
+from importlib.metadata import version
+
+from fastapi import FastAPI
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from redis.asyncio import Redis
+
+from ember.core.config import Settings, get_settings
+from ember.core.errors import register_error_handlers
+from ember.core.health import build_health_router, check_database, check_redis
+from ember.core.observability import RequestIdMiddleware, configure_logging, setup_telemetry
+
+
+def create_app(settings: Settings | None = None) -> FastAPI:
+    """Build the API app. Run with ``uvicorn --factory ember.entrypoints.api:create_app``."""
+    settings = settings or get_settings()
+    configure_logging(settings)
+    setup_telemetry(settings)
+
+    # The client connects lazily, so creating it does no I/O.
+    redis = Redis.from_url(settings.redis.url.get_secret_value())
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        yield
+        await redis.aclose()
+
+    app = FastAPI(
+        title="Ember API",
+        version=version("ember"),
+        lifespan=lifespan,
+        openapi_url="/api/v1/openapi.json",
+        docs_url="/api/v1/docs",
+        redoc_url=None,
+    )
+    register_error_handlers(app)
+    app.include_router(
+        build_health_router(
+            {
+                "database": partial(check_database, settings.db.url.get_secret_value()),
+                "redis": partial(check_redis, redis),
+            }
+        ),
+        prefix="/health",
+        tags=["health"],
+    )
+    app.add_middleware(RequestIdMiddleware)
+    # Instrument last so the tracing middleware is outermost and the request span is
+    # active while RequestIdMiddleware logs (log lines then carry trace_id).
+    FastAPIInstrumentor.instrument_app(app, excluded_urls="/health")
+    return app
