@@ -22,7 +22,7 @@ dependencies = [
     "opentelemetry-sdk>=1.28",
     "opentelemetry-exporter-otlp>=1.28",
     "opentelemetry-instrumentation-fastapi>=0.49b0",
-    "langfuse>=2.54,<3",
+    "langfuse>=2.54",
     "pyyaml>=6.0",
 ]
 
