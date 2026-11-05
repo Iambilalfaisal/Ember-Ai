@@ -68,6 +68,10 @@ mypy_path = "src"
 packages = ["ember"]
 plugins = ["pydantic.mypy"]
 
+[[tool.mypy.overrides]]
+module = ["asyncpg", "asyncpg.*"]
+ignore_missing_imports = true
+
 # --- pytest -----------------------------------------------------------------
 [tool.pytest.ini_options]
 testpaths = ["tests"]
