@@ -67,6 +67,9 @@ class EntraIdentity:
 
     entra_tenant_id: str
     object_id: str
+    email: str | None = None
+    """``email`` or ``preferred_username`` claim, when the app registration emits one. Only used
+    to link an invited user on their first sign-in; never logged."""
 
 
 class UserDirectory(Protocol):
@@ -242,7 +245,15 @@ class EntraTokenVerifier:
         tid, oid = claims.get("tid"), claims.get("oid")
         if tid != self._tenant or not isinstance(oid, str) or not oid:
             raise TokenRejected("missing_claim")
-        return EntraIdentity(entra_tenant_id=tid, object_id=oid)
+        email = next(
+            (
+                claims[name]
+                for name in ("email", "preferred_username")
+                if isinstance(claims.get(name), str) and claims[name]
+            ),
+            None,
+        )
+        return EntraIdentity(entra_tenant_id=tid, object_id=oid, email=email)
 
 
 # --- local dev tokens --------------------------------------------------------

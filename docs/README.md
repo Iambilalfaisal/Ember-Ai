@@ -1,3 +1,5 @@
 # docs
 
-Project documentation. Architecture overview goes in `architecture.md` (F4); decisions are ADRs in `decisions/` (template: `decisions/0000-template.md`).
+Project documentation. [architecture.md](architecture.md) explains how the pieces fit, using the
+`identity` module as the example; decisions are ADRs in `decisions/` (template:
+`decisions/0000-template.md`).

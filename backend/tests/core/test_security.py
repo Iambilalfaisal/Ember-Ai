@@ -94,8 +94,10 @@ class FakeJwksServer:
 class FakeDirectory:
     def __init__(self, users: dict[tuple[str, str], AuthenticatedUser]) -> None:
         self.users = users
+        self.last_identity: EntraIdentity | None = None
 
     async def resolve(self, identity: EntraIdentity) -> AuthenticatedUser | None:
+        self.last_identity = identity
         return self.users.get((identity.entra_tenant_id, identity.object_id))
 
 
@@ -345,6 +347,29 @@ async def test_algorithm_confusion_token_is_401(harness: Harness) -> None:
         response = await client.get("/test/me", headers=bearer(_hs256_signed_with_public_key()))
 
     assert_unauthorized(response)
+
+
+@pytest.mark.parametrize(
+    ("claims", "expected_email"),
+    [
+        ({"email": "mail@x.test"}, "mail@x.test"),
+        ({"preferred_username": "upn@x.test"}, "upn@x.test"),
+        ({"email": "mail@x.test", "preferred_username": "upn@x.test"}, "mail@x.test"),
+        ({"email": "", "preferred_username": "upn@x.test"}, "upn@x.test"),
+        ({"email": 42}, None),
+        ({}, None),
+    ],
+)
+async def test_the_directory_gets_the_email_claim_when_there_is_one(
+    harness: Harness, claims: dict[str, Any], expected_email: str | None
+) -> None:
+    async with harness.client() as client:
+        response = await client.get("/test/me", headers=bearer(entra_token(**claims)))
+
+    assert response.status_code == 200
+    assert harness.directory.last_identity == EntraIdentity(
+        entra_tenant_id=ENTRA_TENANT, object_id=OBJECT_ID, email=expected_email
+    )
 
 
 async def test_valid_token_without_an_ember_account_is_403(harness: Harness) -> None:

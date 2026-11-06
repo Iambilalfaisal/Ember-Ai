@@ -80,8 +80,8 @@ markers = [
 ]
 
 # --- import-linter ----------------------------------------------------------
-# AGENTS.md §2 boundary rules. The "modules only import each other via public"
-# contract is added with scripts/new_module.py in F4, when the first module exists.
+# AGENTS.md §2 boundary rules. scripts/new_module.py appends one contract per module (before
+# the poethepoet section) so other modules may import only <module>.public.
 [tool.importlinter]
 root_package = "ember"
 
@@ -90,6 +90,26 @@ name = "core and adapters never import modules"
 type = "forbidden"
 source_modules = ["ember.core", "ember.adapters"]
 forbidden_modules = ["ember.modules"]
+
+[[tool.importlinter.contracts]]
+name = "other modules use identity only through its public interface"
+type = "forbidden"
+# One source per module package. import-linter skips a source that overlaps a forbidden
+# module, which is what lets a module import its own files while every other module
+# is checked. (With the plain "ember.modules" package as source the check silently
+# does nothing, because that package contains the forbidden modules.)
+source_modules = ["ember.modules.*"]
+forbidden_modules = [
+    "ember.modules.identity.events",
+    "ember.modules.identity.models",
+    "ember.modules.identity.repository",
+    "ember.modules.identity.router",
+    "ember.modules.identity.schemas",
+    "ember.modules.identity.service",
+    "ember.modules.identity.tasks",
+]
+# Reaching private files through <name>.public is the intended route.
+allow_indirect_imports = true
 
 # --- poethepoet -------------------------------------------------------------
 # Run from backend/:  uv run poe <task>   (list them with: uv run poe)

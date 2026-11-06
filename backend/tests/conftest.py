@@ -1,10 +1,13 @@
 import asyncio
 import uuid
 from collections.abc import AsyncIterator, Iterator
+from pathlib import Path
 
 import asyncpg
 import httpx
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -14,6 +17,8 @@ from testcontainers.community.postgres import PostgresContainer
 from ember.core.config import DbSettings, RedisSettings, Settings
 from ember.core.observability import setup_telemetry
 from ember.entrypoints.api import create_app
+
+BACKEND = Path(__file__).resolve().parent.parent
 
 
 def make_settings(**overrides: object) -> Settings:
@@ -78,3 +83,21 @@ def database_url(postgres: PostgresContainer) -> str:
     _run_admin_sql(postgres, f'CREATE DATABASE "{name}"')
     url = make_url(postgres.get_connection_url()).set(database=name)
     return url.render_as_string(hide_password=False)
+
+
+def alembic_config(database_url: str) -> Config:
+    config = Config(str(BACKEND / "alembic.ini"))
+    config.set_main_option("script_location", str(BACKEND / "alembic"))
+    config.attributes["url"] = database_url
+    config.attributes["configure_logging"] = False
+    return config
+
+
+@pytest.fixture
+def migrated_database_url(database_url: str) -> str:
+    """Like ``database_url``, with every Alembic migration applied (so tests use the real schema).
+
+    A sync fixture on purpose: Alembic's async environment starts its own event loop.
+    """
+    command.upgrade(alembic_config(database_url), "head")
+    return database_url

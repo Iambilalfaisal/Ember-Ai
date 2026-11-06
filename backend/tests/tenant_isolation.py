@@ -23,6 +23,7 @@ async def assert_tenant_isolation(
     repository_class: Callable[[AsyncSession], Any],
     make_entity: Callable[[], Any],
     changes: Mapping[str, Any],
+    tenant_ids: tuple[uuid.UUID, uuid.UUID] | None = None,
 ) -> None:
     """Create a row as tenant A, then check tenant B cannot see, change or delete it.
 
@@ -31,8 +32,10 @@ async def assert_tenant_isolation(
         repository_class: the ``TenantScopedRepository`` subclass under test.
         make_entity: builds a new, unsaved row without a ``tenant_id``.
         changes: column values that are valid for ``update``.
+        tenant_ids: ids of two existing tenants, for tables with a foreign key to ``tenants``.
+            Random ids are used when omitted.
     """
-    tenant_a, tenant_b = uuid.uuid4(), uuid.uuid4()
+    tenant_a, tenant_b = tenant_ids or (uuid.uuid4(), uuid.uuid4())
 
     with TenantContext.use(tenant_a):
         async with session_factory() as session:
