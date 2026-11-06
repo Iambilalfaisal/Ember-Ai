@@ -12,6 +12,7 @@ uv sync                          # install dependencies
 cp ../.env.example ../.env       # then edit it
 uv run pre-commit install        # run ruff on every commit
 uv run poe dev                   # start Postgres and Redis (needs Docker)
+uv run poe migrate               # apply database migrations
 uv run poe check                 # lint, types, import rules, tests, OpenAPI drift
 uv run poe                       # list all tasks
 ```

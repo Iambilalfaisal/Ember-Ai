@@ -9,12 +9,12 @@ import asyncio
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Literal
 
-import asyncpg
 import structlog
 from fastapi import APIRouter
 from pydantic import BaseModel
 from redis.asyncio import Redis
-from sqlalchemy.engine import make_url
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from ember.core.errors import UpstreamUnavailable
 
@@ -32,14 +32,10 @@ class ReadyResponse(BaseModel):
     checks: dict[str, Literal["ok"]]
 
 
-async def check_database(url: str) -> None:
-    """Open a connection and run ``SELECT 1``. ``url`` is the SQLAlchemy async URL."""
-    dsn = make_url(url).set(drivername="postgresql").render_as_string(hide_password=False)
-    connection = await asyncpg.connect(dsn)
-    try:
-        await connection.execute("SELECT 1")
-    finally:
-        await connection.close()
+async def check_database(engine: AsyncEngine) -> None:
+    """Run ``SELECT 1`` on a pooled connection from the shared engine."""
+    async with engine.connect() as connection:
+        await connection.execute(text("SELECT 1"))
 
 
 async def check_redis(client: Redis) -> None:

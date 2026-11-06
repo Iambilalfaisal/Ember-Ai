@@ -10,6 +10,7 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from redis.asyncio import Redis
 
 from ember.core.config import Settings, get_settings
+from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import register_error_handlers
 from ember.core.health import build_health_router, check_database, check_redis
 from ember.core.observability import RequestIdMiddleware, configure_logging, setup_telemetry
@@ -21,13 +22,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings)
     setup_telemetry(settings)
 
-    # The client connects lazily, so creating it does no I/O.
+    # Both connect lazily, so creating them does no I/O.
+    engine = create_engine(settings)
     redis = Redis.from_url(settings.redis.url.get_secret_value())
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         yield
         await redis.aclose()
+        await engine.dispose()
 
     app = FastAPI(
         title="Ember API",
@@ -37,11 +40,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         docs_url="/api/v1/docs",
         redoc_url=None,
     )
+    app.state.session_factory = create_session_factory(engine)
     register_error_handlers(app)
     app.include_router(
         build_health_router(
             {
-                "database": partial(check_database, settings.db.url.get_secret_value()),
+                "database": partial(check_database, engine),
                 "redis": partial(check_redis, redis),
             }
         ),

@@ -5,6 +5,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import create_async_engine
 from testcontainers.community.postgres import PostgresContainer
 from testcontainers.community.redis import RedisContainer
 
@@ -90,12 +91,6 @@ async def test_api_ready_is_503_when_database_and_redis_are_unreachable() -> Non
 
 
 @pytest.fixture(scope="module")
-def postgres() -> Iterator[PostgresContainer]:
-    with PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg") as container:
-        yield container
-
-
-@pytest.fixture(scope="module")
 def redis_url() -> Iterator[str]:
     with RedisContainer("redis:7") as container:
         host = container.get_container_host_ip()
@@ -106,12 +101,14 @@ def redis_url() -> Iterator[str]:
 async def test_checks_succeed_against_real_services(
     postgres: PostgresContainer, redis_url: str
 ) -> None:
+    engine = create_async_engine(postgres.get_connection_url())
     client = Redis.from_url(redis_url)
     try:
-        await check_database(postgres.get_connection_url())
+        await check_database(engine)
         await check_redis(client)
     finally:
         await client.aclose()
+        await engine.dispose()
 
 
 @pytest.mark.integration

@@ -1,10 +1,15 @@
-from collections.abc import AsyncIterator
+import asyncio
+import uuid
+from collections.abc import AsyncIterator, Iterator
 
+import asyncpg
 import httpx
 import pytest
 from fastapi import FastAPI
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from sqlalchemy.engine import make_url
+from testcontainers.community.postgres import PostgresContainer
 
 from ember.core.config import DbSettings, RedisSettings, Settings
 from ember.core.observability import setup_telemetry
@@ -42,3 +47,34 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
     transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as http_client:
         yield http_client
+
+
+# --- real Postgres (needs Docker) ---------------------------------------------
+
+
+@pytest.fixture(scope="session")
+def postgres() -> Iterator[PostgresContainer]:
+    with PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg") as container:
+        yield container
+
+
+def _run_admin_sql(container: PostgresContainer, sql: str) -> None:
+    dsn = container.get_connection_url().replace("+asyncpg", "")
+
+    async def run() -> None:
+        connection = await asyncpg.connect(dsn)
+        try:
+            await connection.execute(sql)
+        finally:
+            await connection.close()
+
+    asyncio.run(run())
+
+
+@pytest.fixture
+def database_url(postgres: PostgresContainer) -> str:
+    """SQLAlchemy async URL of a new empty database inside the shared container."""
+    name = f"t_{uuid.uuid4().hex[:12]}"
+    _run_admin_sql(postgres, f'CREATE DATABASE "{name}"')
+    url = make_url(postgres.get_connection_url()).set(database=name)
+    return url.render_as_string(hide_password=False)
