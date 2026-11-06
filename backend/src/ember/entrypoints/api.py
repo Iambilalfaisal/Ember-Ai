@@ -14,6 +14,7 @@ from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import register_error_handlers
 from ember.core.health import build_health_router, check_database, check_redis
 from ember.core.observability import RequestIdMiddleware, configure_logging, setup_telemetry
+from ember.core.security import build_authenticator
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -25,10 +26,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Both connect lazily, so creating them does no I/O.
     engine = create_engine(settings)
     redis = Redis.from_url(settings.redis.url.get_secret_value())
+    # Until the identity module provides a real UserDirectory (F4), Entra tokens verify
+    # but resolve to no user. Dev tokens work in local.
+    authenticator = build_authenticator(settings)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         yield
+        await authenticator.aclose()
         await redis.aclose()
         await engine.dispose()
 
@@ -41,6 +46,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
     )
     app.state.session_factory = create_session_factory(engine)
+    app.state.authenticator = authenticator
     register_error_handlers(app)
     app.include_router(
         build_health_router(
