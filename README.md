@@ -18,6 +18,8 @@ uv run poe                       # list all tasks
 ```
 
 Calling the API locally without Entra: put a dev signing key in `.env` (see `.env.example`),
-then send `Authorization: Bearer <token>` with a token from
-`uv run python scripts/dev_token.py --role admin`. Dev tokens work only when `EMBER_ENV=local`
-([ADR 0004](docs/decisions/0004-tenancy-and-authentication.md)).
+create a tenant with `uv run python scripts/create_tenant.py --name "Demo" --admin-email you@example.test`
+(it prints the ids and the exact `dev_token.py` command), then send
+`Authorization: Bearer <token>`. Dev tokens work only when `EMBER_ENV=local`
+([ADR 0004](docs/decisions/0004-tenancy-and-authentication.md)). New modules are generated with
+`uv run python scripts/new_module.py <name>`; see [docs/architecture.md](docs/architecture.md).

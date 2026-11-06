@@ -1,22 +1,13 @@
 import asyncio
-from pathlib import Path
 from typing import Any
 
 import asyncpg
 import pytest
 from alembic import command
-from alembic.config import Config
 from alembic.script import ScriptDirectory
 
-BACKEND = Path(__file__).resolve().parent.parent
-
-
-def _alembic_config(database_url: str) -> Config:
-    config = Config(str(BACKEND / "alembic.ini"))
-    config.set_main_option("script_location", str(BACKEND / "alembic"))
-    config.attributes["url"] = database_url
-    config.attributes["configure_logging"] = False
-    return config
+from tests.conftest import BACKEND
+from tests.conftest import alembic_config as _alembic_config
 
 
 def _query(database_url: str, sql: str) -> list[Any]:
@@ -52,6 +43,25 @@ def test_upgrade_enables_pgvector(database_url: str) -> None:
     assert version["version_num"] == head
     # The vector type is usable.
     assert _query(database_url, "SELECT '[1,2,3]'::vector AS v")
+
+
+def _tables(database_url: str) -> set[str]:
+    rows = _query(
+        database_url,
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+    )
+    return {row["table_name"] for row in rows}
+
+
+@pytest.mark.integration
+def test_upgrade_creates_identity_tables_and_downgrade_removes_them(database_url: str) -> None:
+    config = _alembic_config(database_url)
+
+    command.upgrade(config, "head")
+    assert {"tenants", "users"} <= _tables(database_url)
+
+    command.downgrade(config, "base")
+    assert not {"tenants", "users"} & _tables(database_url)
 
 
 @pytest.mark.integration

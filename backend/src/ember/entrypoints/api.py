@@ -1,5 +1,8 @@
 """HTTP API entrypoint. Wiring only: no business logic lives here."""
 
+import importlib
+import importlib.util
+import pkgutil
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from functools import partial
@@ -9,12 +12,27 @@ from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from redis.asyncio import Redis
 
+import ember.modules
 from ember.core.config import Settings, get_settings
 from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import register_error_handlers
 from ember.core.health import build_health_router, check_database, check_redis
 from ember.core.observability import RequestIdMiddleware, configure_logging, setup_telemetry
 from ember.core.security import build_authenticator
+from ember.modules.identity.public import IdentityUserDirectory
+
+API_PREFIX = "/api/v1"
+
+
+def include_module_routers(app: FastAPI) -> None:
+    """Mount ``ember.modules.<name>.router.router`` of every module under ``/api/v1``.
+
+    Modules are mounted in name order. Adding a module needs no change here.
+    """
+    for module in pkgutil.iter_modules(ember.modules.__path__):
+        router_module = f"ember.modules.{module.name}.router"
+        if importlib.util.find_spec(router_module) is not None:
+            app.include_router(importlib.import_module(router_module).router, prefix=API_PREFIX)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -26,9 +44,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Both connect lazily, so creating them does no I/O.
     engine = create_engine(settings)
     redis = Redis.from_url(settings.redis.url.get_secret_value())
-    # Until the identity module provides a real UserDirectory (F4), Entra tokens verify
-    # but resolve to no user. Dev tokens work in local.
-    authenticator = build_authenticator(settings)
+    session_factory = create_session_factory(engine)
+    authenticator = build_authenticator(settings, IdentityUserDirectory(session_factory))
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
@@ -41,11 +58,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title="Ember API",
         version=version("ember"),
         lifespan=lifespan,
-        openapi_url="/api/v1/openapi.json",
-        docs_url="/api/v1/docs",
+        openapi_url=f"{API_PREFIX}/openapi.json",
+        docs_url=f"{API_PREFIX}/docs",
         redoc_url=None,
     )
-    app.state.session_factory = create_session_factory(engine)
+    app.state.session_factory = session_factory
     app.state.authenticator = authenticator
     register_error_handlers(app)
     app.include_router(
@@ -58,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         prefix="/health",
         tags=["health"],
     )
+    include_module_routers(app)
     app.add_middleware(RequestIdMiddleware)
     # Instrument last so the tracing middleware is outermost and the request span is
     # active while RequestIdMiddleware logs (log lines then carry trace_id).
