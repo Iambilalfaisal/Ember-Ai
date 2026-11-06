@@ -13,6 +13,7 @@ from opentelemetry.sdk.metrics.export import InMemoryMetricReader
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from sqlalchemy.engine import make_url
 from testcontainers.community.postgres import PostgresContainer
+from testcontainers.community.redis import RedisContainer
 
 from ember.core.config import DbSettings, RedisSettings, Settings
 from ember.core.observability import setup_telemetry
@@ -61,6 +62,13 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 def postgres() -> Iterator[PostgresContainer]:
     with PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg") as container:
         yield container
+
+
+@pytest.fixture(scope="session")
+def redis_url() -> Iterator[str]:
+    """URL of a throwaway Redis. Tests that share it use their own queue names."""
+    with RedisContainer("redis:7") as container:
+        yield f"redis://{container.get_container_host_ip()}:{container.get_exposed_port(6379)}/0"
 
 
 def _run_admin_sql(container: PostgresContainer, sql: str) -> None:

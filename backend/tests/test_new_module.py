@@ -77,6 +77,15 @@ def test_generated_files_are_valid_python_and_mention_the_module(backend: Path) 
     assert "router = APIRouter" in (module / "router.py").read_text(encoding="utf-8")
 
 
+def test_generated_events_and_tasks_files_follow_the_conventions(backend: Path) -> None:
+    generator.create_module("accounts", backend=backend)
+
+    module = backend / "src" / "ember" / "modules" / "accounts"
+    events = (module / "events.py").read_text(encoding="utf-8")
+    assert "def register_handlers(bus: EventBus) -> None:" in events
+    assert '@task("accounts.<verb>")' in (module / "tasks.py").read_text(encoding="utf-8")
+
+
 def test_generated_placeholder_tests_are_skipped_not_passing(backend: Path) -> None:
     generator.create_module("accounts", backend=backend)
 

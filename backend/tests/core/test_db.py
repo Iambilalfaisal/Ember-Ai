@@ -14,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ember.core.config import DbSettings
 from ember.core.db import SessionDep, create_engine, create_session_factory, get_session
 from ember.core.errors import Conflict
+from ember.core.events import InProcessEventBus
 from ember.core.models import Base, IdMixin, TenantMixin, TimestampMixin
 from ember.entrypoints.api import create_app
 from tests.conftest import make_settings
@@ -47,7 +48,7 @@ class FakeSession:
 
 
 def _request_with(session: FakeSession) -> Any:
-    state = SimpleNamespace(session_factory=lambda: session)
+    state = SimpleNamespace(session_factory=lambda: session, event_bus=InProcessEventBus())
     return SimpleNamespace(app=SimpleNamespace(state=state))
 
 

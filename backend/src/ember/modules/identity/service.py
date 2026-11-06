@@ -12,9 +12,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ember.core.errors import Conflict, NotFound
+from ember.core.events import EventBus
 from ember.core.schemas import CursorPage
 from ember.core.security import AuthenticatedUser, EntraIdentity, Role
 from ember.core.tenancy import DEFAULT_PAGE_LIMIT, TenantContext
+from ember.modules.identity.events import UserInvited
 from ember.modules.identity.models import Tenant, User, UserStatus
 from ember.modules.identity.repository import TenantRepository, UserRepository
 from ember.modules.identity.schemas import (
@@ -29,13 +31,14 @@ logger = structlog.get_logger(__name__)
 
 
 class IdentityService:
-    def __init__(self, tenants: TenantRepository, users: UserRepository) -> None:
+    def __init__(self, tenants: TenantRepository, users: UserRepository, events: EventBus) -> None:
         self._tenants = tenants
         self._users = users
+        self._events = events
 
     @classmethod
-    def for_session(cls, session: AsyncSession) -> Self:
-        return cls(TenantRepository(session), UserRepository(session))
+    def for_session(cls, session: AsyncSession, events: EventBus) -> Self:
+        return cls(TenantRepository(session), UserRepository(session), events)
 
     async def get_user(self, user_id: uuid.UUID) -> UserRead | None:
         """Return a user of the current tenant, or ``None``.
@@ -86,7 +89,8 @@ class IdentityService:
     async def invite_user(self, request: InviteUser) -> UserRead:
         """Create an invited user in the current tenant.
 
-        The user becomes active when they first sign in with the invited email.
+        The user becomes active when they first sign in with the invited email. Publishes
+        ``UserInvited``, delivered once the request's transaction commits.
 
         Raises:
             Conflict: a user with this email already exists in the tenant.
@@ -103,6 +107,7 @@ class IdentityService:
             await self._users.add(user)
         except IntegrityError as exc:  # lost a race with a concurrent invite of the same email
             raise Conflict("A user with this email already exists.") from exc
+        await self._events.publish(UserInvited(tenant_id=TenantContext.require(), user_id=user.id))
         logger.info("identity.user_invited", user_id=str(user.id))
         return UserRead.model_validate(user)
 

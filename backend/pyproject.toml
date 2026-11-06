@@ -78,6 +78,10 @@ markers = [
     "integration: needs Docker (Postgres/Redis via testcontainers)",
     "live: calls a real external provider; skipped in CI",
 ]
+filterwarnings = [
+    # taskiq-dependencies still throws into generator dependencies with the old 3-argument form.
+    "ignore:the \\(type, exc, tb\\) signature of athrow\\(\\) is deprecated:DeprecationWarning",
+]
 
 # --- import-linter ----------------------------------------------------------
 # AGENTS.md §2 boundary rules. scripts/new_module.py appends one contract per module (before
@@ -118,7 +122,8 @@ dev = { cmd = "docker compose -f ../infra/docker-compose.yml up -d", help = "Sta
 down = { cmd = "docker compose -f ../infra/docker-compose.yml down", help = "Stop local Postgres and Redis" }
 api = { cmd = "uvicorn --factory ember.entrypoints.api:create_app --reload --port 8000", help = "Run the HTTP API" }
 realtime = { cmd = "uvicorn --factory ember.entrypoints.realtime:create_app --reload --port 8001", help = "Run the live-call WebSocket service" }
-worker = { cmd = "taskiq worker ember.entrypoints.worker:broker --fs-discover", help = "Run the background worker" }
+worker = { cmd = "taskiq worker ember.entrypoints.worker:create_broker", help = "Run the background worker" }
+scheduler = { cmd = "taskiq scheduler ember.entrypoints.worker:create_scheduler", help = "Run the scheduler of periodic (cron) jobs" }
 test = { cmd = "pytest", help = "Run the tests" }
 migrate = { cmd = "alembic upgrade head", help = "Apply database migrations" }
 openapi = { cmd = "python scripts/export_openapi.py", help = "Regenerate contracts/ from the app (script arrives in F8)" }

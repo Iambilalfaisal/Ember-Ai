@@ -8,7 +8,9 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from ember.core.events import EventBus, NullEventBus
 from ember.core.security import AuthenticatedUser, EntraIdentity
+from ember.modules.identity.events import UserInvited
 from ember.modules.identity.schemas import TenantRead, TenantSettings, UserRead
 from ember.modules.identity.service import IdentityService
 
@@ -16,6 +18,7 @@ __all__ = [
     "IdentityUserDirectory",
     "TenantRead",
     "TenantSettings",
+    "UserInvited",
     "UserRead",
     "create_tenant_with_admin",
     "get_tenant_settings",
@@ -29,7 +32,7 @@ async def get_user(session: AsyncSession, user_id: uuid.UUID) -> UserRead | None
     Raises:
         TenantNotSet: no current tenant (call inside a request or ``TenantContext.use``).
     """
-    return await IdentityService.for_session(session).get_user(user_id)
+    return await IdentityService.for_session(session, NullEventBus()).get_user(user_id)
 
 
 async def get_tenant_settings(session: AsyncSession) -> TenantSettings:
@@ -39,11 +42,12 @@ async def get_tenant_settings(session: AsyncSession) -> TenantSettings:
         NotFound: the current tenant does not exist.
         TenantNotSet: no current tenant.
     """
-    return await IdentityService.for_session(session).get_tenant_settings()
+    return await IdentityService.for_session(session, NullEventBus()).get_tenant_settings()
 
 
 async def create_tenant_with_admin(
     session: AsyncSession,
+    events: EventBus,
     *,
     name: str,
     entra_tenant_id: str | None,
@@ -52,10 +56,13 @@ async def create_tenant_with_admin(
 ) -> tuple[TenantRead, UserRead]:
     """Create a tenant and an invited admin (bootstrap; the caller commits).
 
+    ``UserInvited`` is published for the admin on ``events``. A script with no listeners can
+    pass a ``NullEventBus``.
+
     Raises:
         Conflict: the Entra directory is already linked to another tenant.
     """
-    return await IdentityService.for_session(session).create_tenant(
+    return await IdentityService.for_session(session, events).create_tenant(
         name=name,
         entra_tenant_id=entra_tenant_id,
         admin_email=admin_email,
@@ -76,6 +83,7 @@ class IdentityUserDirectory:
 
     async def resolve(self, identity: EntraIdentity) -> AuthenticatedUser | None:
         async with self._session_factory() as session:
-            user = await IdentityService.for_session(session).resolve_identity(identity)
+            service = IdentityService.for_session(session, NullEventBus())
+            user = await service.resolve_identity(identity)
             await session.commit()
         return user

@@ -1,8 +1,5 @@
 """HTTP API entrypoint. Wiring only: no business logic lives here."""
 
-import importlib
-import importlib.util
-import pkgutil
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from functools import partial
@@ -12,27 +9,21 @@ from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from redis.asyncio import Redis
 
-import ember.modules
 from ember.core.config import Settings, get_settings
 from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import register_error_handlers
+from ember.core.events import InProcessEventBus
 from ember.core.health import build_health_router, check_database, check_redis
 from ember.core.observability import RequestIdMiddleware, configure_logging, setup_telemetry
 from ember.core.security import build_authenticator
+from ember.core.tasks import build_broker, registry
+from ember.entrypoints.wiring import (
+    API_PREFIX,
+    import_module_tasks,
+    include_module_routers,
+    register_module_event_handlers,
+)
 from ember.modules.identity.public import IdentityUserDirectory
-
-API_PREFIX = "/api/v1"
-
-
-def include_module_routers(app: FastAPI) -> None:
-    """Mount ``ember.modules.<name>.router.router`` of every module under ``/api/v1``.
-
-    Modules are mounted in name order. Adding a module needs no change here.
-    """
-    for module in pkgutil.iter_modules(ember.modules.__path__):
-        router_module = f"ember.modules.{module.name}.router"
-        if importlib.util.find_spec(router_module) is not None:
-            app.include_router(importlib.import_module(router_module).router, prefix=API_PREFIX)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -46,10 +37,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     redis = Redis.from_url(settings.redis.url.get_secret_value())
     session_factory = create_session_factory(engine)
     authenticator = build_authenticator(settings, IdentityUserDirectory(session_factory))
+    # Event handlers run in this process; the broker only sends jobs for the worker to run.
+    events = InProcessEventBus()
+    register_module_event_handlers(events)
+    broker = build_broker(settings)
+    import_module_tasks()
+    registry.bind(broker)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        await broker.startup()
         yield
+        await broker.shutdown()
         await authenticator.aclose()
         await redis.aclose()
         await engine.dispose()
@@ -63,6 +62,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
     )
     app.state.session_factory = session_factory
+    app.state.event_bus = events
     app.state.authenticator = authenticator
     register_error_handlers(app)
     app.include_router(

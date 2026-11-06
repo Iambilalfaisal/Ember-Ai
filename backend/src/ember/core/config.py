@@ -53,6 +53,15 @@ class AuthSettings(BaseModel):
         return value
 
 
+class TasksSettings(BaseModel):
+    """Background jobs (Taskiq on the Redis from ``redis.url``)."""
+
+    queue_name: str = "ember"
+    """Redis stream the workers read. Use a different name per environment sharing a Redis."""
+    result_ttl_seconds: int = Field(default=3600, gt=0)
+    """How long task results stay readable in Redis."""
+
+
 class AiSettings(BaseModel):
     tasks_config_path: Path = Path("config/ai_tasks.yaml")
 
@@ -91,6 +100,7 @@ class Settings(BaseSettings):
     db: DbSettings
     redis: RedisSettings
     auth: AuthSettings = AuthSettings()
+    tasks: TasksSettings = TasksSettings()
     ai: AiSettings = AiSettings()
     stt: SttSettings = SttSettings()
     storage: StorageSettings = StorageSettings()

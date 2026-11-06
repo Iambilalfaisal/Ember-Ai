@@ -1,6 +1,7 @@
 """Service tests with fake repositories: no database, no Docker."""
 
 import uuid
+from contextlib import AbstractAsyncContextManager
 from datetime import UTC, datetime
 from typing import Any
 
@@ -9,9 +10,11 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from ember.core.errors import Conflict, NotFound
+from ember.core.events import Event, NullEventBus
 from ember.core.observability import configure_logging
 from ember.core.security import EntraIdentity, Role
 from ember.core.tenancy import Page, TenantContext, TenantNotSet
+from ember.modules.identity.events import UserInvited
 from ember.modules.identity.models import Tenant, User, UserStatus
 from ember.modules.identity.schemas import InviteUser
 from ember.modules.identity.service import IdentityService
@@ -80,11 +83,28 @@ class FakeUserRepository:
         return user
 
 
+class RecordingEventBus:
+    """Remembers what was published (the real bus is tested in tests/core/test_events.py)."""
+
+    def __init__(self) -> None:
+        self.published: list[Event] = []
+
+    def subscribe(self, event_type: type[Event], handler: object) -> None:
+        return None
+
+    async def publish(self, event: Event) -> None:
+        self.published.append(event)
+
+    def unit_of_work(self) -> AbstractAsyncContextManager[None]:
+        return NullEventBus().unit_of_work()
+
+
 class World:
     def __init__(self) -> None:
         self.tenants = FakeTenantRepository()
         self.users = FakeUserRepository()
-        self.service = IdentityService(self.tenants, self.users)  # type: ignore[arg-type]
+        self.events = RecordingEventBus()
+        self.service = IdentityService(self.tenants, self.users, self.events)  # type: ignore[arg-type]
 
     async def tenant(self, name: str = "Acme", entra: str | None = ENTRA) -> Tenant:
         return await self.tenants.add(Tenant(name=name, entra_tenant_id=entra))
@@ -174,6 +194,28 @@ def test_invite_normalises_and_validates_input() -> None:
         InviteUser(email="a@b.co", roles=[])
     with pytest.raises(ValidationError):
         InviteUser(email="a@b.co", roles=["superuser"])  # type: ignore[list-item]
+
+
+async def test_invite_publishes_user_invited_with_ids_only(world: World) -> None:
+    tenant = await world.tenant()
+
+    with TenantContext.use(tenant.id):
+        created = await world.service.invite_user(invite("secret.address@acme.test"))
+
+    (event,) = world.events.published
+    assert isinstance(event, UserInvited)
+    assert (event.tenant_id, event.user_id) == (tenant.id, created.id)
+    assert "secret.address" not in event.model_dump_json()
+
+
+async def test_a_rejected_invite_publishes_nothing(world: World) -> None:
+    tenant = await world.tenant()
+    await world.user(tenant, "taken@acme.test")
+
+    with TenantContext.use(tenant.id), pytest.raises(Conflict):
+        await world.service.invite_user(invite("taken@acme.test"))
+
+    assert world.events.published == []
 
 
 async def test_inviting_does_not_log_the_email(capsys: pytest.CaptureFixture[str]) -> None:
@@ -352,6 +394,7 @@ async def test_create_tenant_makes_an_invited_admin(world: World) -> None:
     assert admin.roles == [Role.ADMIN]
     assert admin.status == UserStatus.INVITED
     assert world.users.users[admin.id].tenant_id == tenant.id
+    assert [(e.tenant_id, e.user_id) for e in world.events.published] == [(tenant.id, admin.id)]
 
 
 async def test_create_tenant_refuses_an_entra_directory_that_is_already_linked(
