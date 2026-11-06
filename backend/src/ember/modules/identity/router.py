@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from ember.core.db import SessionDep
+from ember.core.events import EventBus, get_event_bus
 from ember.core.schemas import CursorPage, Pagination
 from ember.core.security import CurrentUser, Role, require_role
 from ember.modules.identity.schemas import InviteUser, MeRead, UserRead
@@ -13,8 +14,10 @@ from ember.modules.identity.service import IdentityService
 router = APIRouter(tags=["identity"])
 
 
-def get_service(session: SessionDep) -> IdentityService:
-    return IdentityService.for_session(session)
+def get_service(
+    session: SessionDep, events: Annotated[EventBus, Depends(get_event_bus)]
+) -> IdentityService:
+    return IdentityService.for_session(session, events)
 
 
 ServiceDep = Annotated[IdentityService, Depends(get_service)]

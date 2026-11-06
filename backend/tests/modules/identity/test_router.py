@@ -8,8 +8,10 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ember.core.config import Settings
+from ember.core.events import Event, InProcessEventBus
 from ember.core.security import Role
 from ember.entrypoints.api import create_app
+from ember.modules.identity.events import UserInvited
 from tests.modules.identity.conftest import SeededTenant, dev_token, seed_tenant, user_spec
 
 pytestmark = pytest.mark.integration
@@ -21,6 +23,8 @@ class Scenario:
     b: SeededTenant
     settings: Settings
     client: httpx.AsyncClient
+    events: list[Event]
+    """Every event delivered by the app, in order (delivery means the request committed)."""
 
     def as_user(self, tenant: SeededTenant, key: str, *roles: Role) -> dict[str, str]:
         return dev_token(self.settings, tenant.users[key], tenant.tenant_id, *roles)
@@ -44,9 +48,19 @@ async def scenario(
         "Beta",
         {"admin": user_spec("admin@b.test", Role.ADMIN), "rep": user_spec("rep@b.test", Role.REP)},
     )
-    transport = httpx.ASGITransport(app=create_app(local_settings), raise_app_exceptions=False)
+    app = create_app(local_settings)
+    # Replace the app's bus (whose handler would enqueue a job on a broker nobody started) with
+    # one that records what gets delivered. The job itself is tested in test_events_flow.py.
+    delivered: list[Event] = []
+
+    async def record(event: Event) -> None:
+        delivered.append(event)
+
+    app.state.event_bus = InProcessEventBus()
+    app.state.event_bus.subscribe(Event, record)
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        yield Scenario(a, b, local_settings, client)
+        yield Scenario(a, b, local_settings, client, delivered)
 
 
 def assert_problem(response: httpx.Response, status: int, type_suffix: str) -> None:
@@ -192,6 +206,39 @@ async def test_admin_invites_a_user(scenario: Scenario) -> None:
     assert created["status"] == "invited"
     listed = (await scenario.client.get("/api/v1/users", headers=headers)).json()["items"]
     assert created["id"] in {user["id"] for user in listed}
+
+
+async def test_an_invite_publishes_user_invited_once_it_is_committed(scenario: Scenario) -> None:
+    response = await scenario.client.post(
+        "/api/v1/users",
+        headers=scenario.as_user(scenario.a, "admin", Role.ADMIN),
+        json={"email": "event.person@a.test", "roles": ["rep"]},
+    )
+
+    (event,) = scenario.events
+    assert isinstance(event, UserInvited)
+    assert str(event.user_id) == response.json()["id"]
+    assert event.tenant_id == scenario.a.tenant_id
+    assert "event.person" not in event.model_dump_json()
+
+
+async def test_requests_that_invite_nobody_publish_nothing(scenario: Scenario) -> None:
+    admin = scenario.as_user(scenario.a, "admin", Role.ADMIN)
+
+    await scenario.client.post(  # duplicate email: 409
+        "/api/v1/users", headers=admin, json={"email": "rep@a.test", "roles": ["rep"]}
+    )
+    await scenario.client.post(  # invalid body: 422
+        "/api/v1/users", headers=admin, json={"email": "nope", "roles": ["rep"]}
+    )
+    await scenario.client.post(  # wrong role: 403
+        "/api/v1/users",
+        headers=scenario.as_user(scenario.a, "rep", Role.REP),
+        json={"email": "x@a.test", "roles": ["rep"]},
+    )
+    await scenario.client.get("/api/v1/users", headers=admin)
+
+    assert scenario.events == []
 
 
 async def test_invited_user_belongs_to_the_inviting_admins_tenant_only(scenario: Scenario) -> None:

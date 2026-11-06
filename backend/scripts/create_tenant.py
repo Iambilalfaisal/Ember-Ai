@@ -14,6 +14,7 @@ import sys
 from ember.core.config import get_settings
 from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import AppError
+from ember.core.events import NullEventBus
 from ember.modules.identity.public import create_tenant_with_admin
 
 
@@ -24,6 +25,7 @@ async def run(args: argparse.Namespace) -> int:
             try:
                 tenant, admin = await create_tenant_with_admin(
                     session,
+                    NullEventBus(),  # a script has no listeners, so UserInvited is not delivered
                     name=args.name,
                     entra_tenant_id=args.entra_tenant_id,
                     admin_email=args.admin_email,

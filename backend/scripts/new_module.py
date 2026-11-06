@@ -58,8 +58,21 @@ SOURCE_TEMPLATES = {
         "automatically.\n"
         '"""\n'
     ),
-    "events.py": '"""Events the {name} module publishes and the handlers it registers."""\n',
-    "tasks.py": '"""Taskiq tasks of the {name} module (verbs, e.g. ``ingest_document``)."""\n',
+    "events.py": (
+        '"""Events the {name} module publishes and the handlers it registers.\n\n'
+        "Name events in the past tense, subclass ``Event`` and carry ids only. Other modules\n"
+        "subscribe through ``public.py``.\n"
+        '"""\n\n'
+        "from ember.core.events import EventBus\n\n\n"
+        "def register_handlers(bus: EventBus) -> None:\n"
+        '    """Subscribe this module\'s handlers. Called once at startup by every entrypoint."""\n'
+    ),
+    "tasks.py": (
+        '"""Taskiq tasks of the {name} module (verbs, e.g. ``ingest_document``).\n\n'
+        'Declare them with ``@task("{name}.<verb>")`` from ``ember.core.tasks``. A task takes\n'
+        "``tenant_id`` first and may take ``session: JobSession``.\n"
+        '"""\n'
+    ),
 }
 
 TEST_TEMPLATES = {

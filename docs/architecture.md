@@ -11,7 +11,7 @@ reference example.
 |---|---|
 | `entrypoints/api.py` | HTTP API (`/api/v1`) |
 | `entrypoints/realtime.py` | WebSocket live-call sessions (later) |
-| `entrypoints/worker.py` | Background jobs (later) |
+| `entrypoints/worker.py` | Background jobs and the scheduler (`uv run poe worker`, `uv run poe scheduler`) |
 
 All three import the same modules. An entrypoint only wires things together: it builds the
 engine, the authenticator and the app, and mounts each module's router. No business logic.
@@ -59,8 +59,8 @@ modules/identity/
 ├── service.py      IdentityService: invite, list, sign-in resolution, tenant bootstrap
 ├── repository.py   UserRepository (tenant-scoped), TenantRepository (the registry)
 ├── models.py       Tenant, User (Alembic discovers this file automatically)
-├── events.py       (empty until F5: UserInvited)
-└── tasks.py        (empty until F5)
+├── events.py       UserInvited, register_handlers (enqueues the example job)
+└── tasks.py        log_user_invited (the example job)
 ```
 
 How it follows the rules:
@@ -81,6 +81,31 @@ How it follows the rules:
   Postgres with the migrated schema and include the tenant-isolation proof. Route tests call the
   real app with dev tokens. See `tests/modules/identity/`.
 
+## Events and background jobs
+
+A module announces what happened with an event, and does slow work in a job. Both are delivered
+only after the transaction that caused them commits ([ADR 0006](decisions/0006-events-and-background-jobs.md)).
+
+```
+POST /api/v1/users  ->  IdentityService.invite_user  ->  bus.publish(UserInvited)      (queued)
+                                                          session commits
+                        bus delivers UserInvited     ->  handler enqueues identity.log_user_invited
+                                                          response is sent
+worker (separate process)  <-  Redis stream  <-  the job: runs as that tenant, in its own transaction
+```
+
+- **Publish** from a service with `await events.publish(SomethingHappened(tenant_id=..., ...))`.
+  Name events in the past tense and carry ids, never personal data. If the request raises or the
+  commit fails, nothing is delivered.
+- **React** by adding a handler in the module's `events.py` (`register_handlers(bus)`). Handlers
+  run in the API or worker process before the response, so keep them quick: enqueue a job. A handler
+  that fails is logged and does not affect the request.
+- **Jobs** are declared in `tasks.py` with `@task("module.verb")` and sent with
+  `await my_task.enqueue(tenant_id=..., ...)`. A job takes `tenant_id` first, runs as that tenant, and
+  can take `session: JobSession` for its one transaction. Jobs are delivered at least once, so make them
+  safe to repeat. Periodic jobs use `cron=` (and no tenant) and run under `uv run poe scheduler`.
+- **Not guaranteed:** events are not stored. A crash between commit and delivery loses the event.
+
 ## Adding a module
 
 ```
@@ -90,7 +115,8 @@ uv run python scripts/new_module.py accounts          # add --ai if it uses prom
 The generator creates the standard files, a matching `tests/modules/accounts/` folder with
 skipped placeholder tests, and a contract in `pyproject.toml` that keeps other modules on
 `accounts.public`. Nothing else needs registering: the API mounts every
-`ember.modules.<name>.router.router`, and Alembic imports every `ember.modules.<name>.models`.
+`ember.modules.<name>.router.router`, every entrypoint subscribes each `events.register_handlers`
+and imports each `tasks.py`, and Alembic imports every `ember.modules.<name>.models`.
 Then write the models, run `uv run alembic revision --autogenerate -m "..."`, review the migration
 and replace the placeholder tests.
 
