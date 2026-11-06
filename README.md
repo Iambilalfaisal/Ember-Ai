@@ -16,3 +16,8 @@ uv run poe migrate               # apply database migrations
 uv run poe check                 # lint, types, import rules, tests, OpenAPI drift
 uv run poe                       # list all tasks
 ```
+
+Calling the API locally without Entra: put a dev signing key in `.env` (see `.env.example`),
+then send `Authorization: Bearer <token>` with a token from
+`uv run python scripts/dev_token.py --role admin`. Dev tokens work only when `EMBER_ENV=local`
+([ADR 0004](docs/decisions/0004-tenancy-and-authentication.md)).

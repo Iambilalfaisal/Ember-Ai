@@ -1,9 +1,10 @@
 """SQLAlchemy declarative base and the mixins every business table uses.
 
 Every business table has ``id`` (UUID primary key), ``tenant_id`` (not null, indexed),
-``created_at`` and ``updated_at`` (``timestamptz``, UTC). Compose the mixins::
+``created_at`` and ``updated_at`` (``timestamptz``, UTC). Inherit :class:`TenantModel`
+(the three mixins on ``Base``)::
 
-    class Document(Base, IdMixin, TenantMixin, TimestampMixin):
+    class Document(TenantModel):
         __tablename__ = "documents"
 """
 
@@ -52,3 +53,14 @@ class TimestampMixin:
         server_default=func.now(),
         onupdate=utcnow,
     )
+
+
+class TenantModel(Base, IdMixin, TenantMixin, TimestampMixin):
+    """Abstract base for tenant-owned business tables.
+
+    Same columns as composing the three mixins by hand, but gives
+    ``TenantScopedRepository`` a type that guarantees ``id``, ``tenant_id`` and
+    ``created_at`` exist.
+    """
+
+    __abstract__ = True

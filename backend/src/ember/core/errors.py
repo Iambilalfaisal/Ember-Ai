@@ -8,7 +8,7 @@ input and never include internal exception messages for unexpected errors.
 
 from collections.abc import Mapping, Sequence
 from http import HTTPStatus
-from typing import Any, cast
+from typing import Any, ClassVar, cast
 
 import structlog
 from fastapi import FastAPI, Request
@@ -51,6 +51,8 @@ class AppError(Exception):
     status_code = 500
     type = "urn:ember:problem:internal"
     title = "Internal Server Error"
+    headers: ClassVar[Mapping[str, str]] = {}
+    """Extra response headers, e.g. ``WWW-Authenticate`` on a 401."""
 
     def __init__(
         self,
@@ -67,6 +69,13 @@ class NotFound(AppError):
     status_code = 404
     type = "urn:ember:problem:not-found"
     title = "Not Found"
+
+
+class Unauthorized(AppError):
+    status_code = 401
+    type = "urn:ember:problem:unauthorized"
+    title = "Unauthorized"
+    headers: ClassVar[Mapping[str, str]] = {"WWW-Authenticate": "Bearer"}
 
 
 class Forbidden(AppError):
@@ -140,6 +149,7 @@ async def _handle_app_error(request: Request, exc: Exception) -> JSONResponse:
         title=exc.title,
         detail=exc.detail,
         extensions=exc.extensions,
+        headers=exc.headers,
     )
 
 
