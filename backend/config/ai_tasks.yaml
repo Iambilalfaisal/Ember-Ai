@@ -1,0 +1,76 @@
+# Which provider and model each AI task uses (AGENTS.md section 7).
+# Code names a task, never a model: to change a model, a limit or a fallback, edit this file.
+# The file is validated at startup (ember.adapters.ai.config).
+#
+# Each task:
+#   kind            chat (default) or embedding
+#   provider        a provider the gateway knows ("openai")
+#   model           the provider's model name; it must have a price under `models`
+#   max_tokens      cap on generated tokens (chat only)
+#   timeout_seconds chat/embedding: the whole call. Streaming: the longest wait for the
+#                   next piece of text, first piece included.
+#   temperature     optional
+#   fallback        optional {provider, model}: tried when the primary fails or times out
+#
+# The limits and models below are starting values. They have not been tuned: the eval
+# runner (F9) is what should decide them. Check prices against the provider's price page.
+
+models:
+  # US dollars per million tokens.
+  openai/gpt-4o-mini:
+    input_per_million_usd: 0.15
+    output_per_million_usd: 0.60
+  openai/gpt-4o:
+    input_per_million_usd: 2.50
+    output_per_million_usd: 10.00
+  openai/text-embedding-3-small:
+    input_per_million_usd: 0.02
+
+tasks:
+  # Live call: decide whether the last utterance is a question worth answering.
+  live_detect:
+    provider: openai
+    model: gpt-4o-mini
+    max_tokens: 64
+    timeout_seconds: 3
+    temperature: 0
+
+  # Live call: the answer card the rep reads while talking.
+  live_answer:
+    provider: openai
+    model: gpt-4o
+    max_tokens: 400
+    timeout_seconds: 6
+    temperature: 0.2
+    fallback:
+      provider: openai
+      model: gpt-4o-mini
+
+  # After the call: the summary the rep reviews and approves.
+  call_summary:
+    provider: openai
+    model: gpt-4o
+    max_tokens: 1500
+    timeout_seconds: 60
+    temperature: 0.2
+
+  # After the call: the follow-up email draft.
+  followup_draft:
+    provider: openai
+    model: gpt-4o
+    max_tokens: 800
+    timeout_seconds: 30
+    temperature: 0.4
+
+  # Knowledge base: embed document chunks, and embed a question to search them.
+  embed_document:
+    kind: embedding
+    provider: openai
+    model: text-embedding-3-small
+    timeout_seconds: 30
+
+  embed_query:
+    kind: embedding
+    provider: openai
+    model: text-embedding-3-small
+    timeout_seconds: 5

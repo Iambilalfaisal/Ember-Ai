@@ -64,6 +64,11 @@ class TasksSettings(BaseModel):
 
 class AiSettings(BaseModel):
     tasks_config_path: Path = Path("config/ai_tasks.yaml")
+    """Which provider and model each AI task uses; relative paths are from the working directory."""
+    openai_api_key: SecretStr | None = None
+    """Needed by any task whose provider is ``openai``. Without it those calls fail clearly."""
+    openai_base_url: str = "https://api.openai.com/v1"
+    """Change only to use a compatible gateway or proxy."""
 
 
 class SttSettings(BaseModel):

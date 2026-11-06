@@ -106,6 +106,38 @@ worker (separate process)  <-  Redis stream  <-  the job: runs as that tenant, i
   safe to repeat. Periodic jobs use `cron=` (and no tenant) and run under `uv run poe scheduler`.
 - **Not guaranteed:** events are not stored. A crash between commit and delivery loses the event.
 
+## Adapters and the AI gateway
+
+Everything external sits behind an interface in `adapters/`, with a `fake.py` for tests
+([ADR 0007](decisions/0007-adapters-and-ai-gateway.md)):
+
+```
+adapters/ai/        gateway, OpenAI provider, fake provider, task config, prompts, usage, tracing
+adapters/stt/       streaming token for the desktop, batch transcription (interface + fake)
+adapters/storage/   tenant-scoped blob upload, download, signed URL (interface + fake)
+adapters/clickup/   interface + fake
+adapters/msgraph/   interface + fake
+```
+
+Code never names a model. It names a task, and `config/ai_tasks.yaml` decides the rest:
+
+```python
+gateway = Depends(get_ai_gateway)  # one per process, built at startup
+async for piece in gateway.stream(
+    task="live_answer", messages=messages, prompt=prompt.ref
+):
+    ...  # the tenant comes from TenantContext
+```
+
+For every attempt the gateway enforces the task's timeout, tries the task's fallback model if the
+primary fails, writes one `ai_usage` row (tokens, cost, latency, tenant) in its own transaction, and
+sends a Langfuse trace. A recording or tracing failure never fails the call. To change a task's model,
+limits or fallback, edit `ai_tasks.yaml`; its prices live there too.
+
+Prompts are files, `modules/<m>/prompts/<name>.v<N>.md`, loaded with
+`PromptLibrary(folder).load(name, version=N)`. Run the live smoke test (a few cents, needs
+`EMBER_AI__OPENAI_API_KEY`) with `EMBER_RUN_LIVE_TESTS=1 uv run pytest -m live`.
+
 ## Adding a module
 
 ```

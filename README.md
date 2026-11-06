@@ -18,6 +18,7 @@ uv run poe worker                # run the background worker (needs Redis from `
 uv run poe scheduler             # run periodic (cron) jobs, once any exist
 uv run poe check                 # lint, types, import rules, tests, OpenAPI drift
 uv run poe                       # list all tasks
+EMBER_RUN_LIVE_TESTS=1 uv run pytest -m live   # real OpenAI smoke test (needs EMBER_AI__OPENAI_API_KEY; costs cents)
 ```
 
 Calling the API locally without Entra: put a dev signing key in `.env` (see `.env.example`),
