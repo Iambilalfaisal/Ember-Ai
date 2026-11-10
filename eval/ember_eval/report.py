@@ -52,7 +52,12 @@ def build_report(
         "setup": setup_name,
         "inputs_sha256": dataset["inputs_sha256"],
         "dataset": dataset,
-        "config": {"setup": setup, "scoring": scoring, "prompt": prompt, "ai_task": ai_task},
+        "config": {
+            "setup": setup,
+            "scoring": scoring,
+            "prompt": prompt,
+            "ai_task": ai_task,
+        },
         "metrics": metrics,
         "items": [
             {
@@ -190,7 +195,9 @@ def write_report(
     json_path = directory / f"{stem}.json"
     markdown_path = directory / f"{stem}.md"
     json_path.write_text(
-        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     markdown_path.write_text(markdown, encoding="utf-8", newline="\n")
     return json_path, markdown_path

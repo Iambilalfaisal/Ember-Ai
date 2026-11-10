@@ -86,7 +86,11 @@ async def run_eval(
     with TenantContext.use(EVAL_TENANT):
         for item in items:
             attempt = await answer_question(
-                item.question, search=search, gateway=gateway, prompt=prompt, setup=setup
+                item.question,
+                search=search,
+                gateway=gateway,
+                prompt=prompt,
+                setup=setup,
             )
             results.append(score_item(item, attempt, scoring))
     return results

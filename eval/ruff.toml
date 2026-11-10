@@ -1,0 +1,4 @@
+# The pre-commit hook runs ruff from the repository root, where nothing configures eval/;
+# without this file it would use ruff's defaults (88 columns) instead of the backend's rules.
+extend = "../backend/pyproject.toml"
+src = [".", "../backend/src"]
