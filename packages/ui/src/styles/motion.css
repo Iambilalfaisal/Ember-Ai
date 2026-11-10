@@ -1,0 +1,136 @@
+/*
+ * Motion (docs/ui-design-prompt.md section 4). Motion answers the user or marks something live.
+ *
+ * Reduced motion: every animation becomes an instant change. It applies to the system setting and to
+ * data-motion="reduce" on <html>, which the /design route uses to show the reduced behaviour.
+ */
+
+/* Ignite: a thin glow line sweeps down the left edge and settles as a solid 3 px edge (600 ms). */
+@keyframes ember-ignite {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    width: 1px;
+  }
+  70% {
+    clip-path: inset(0 0 0 0);
+    width: 1px;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    width: 3px;
+  }
+}
+
+/* Listening: the only continuous animation. */
+@keyframes ember-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes ember-sheet-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes ember-sheet-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes ember-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes ember-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ember-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.ember-ignite-edge {
+  animation: ember-ignite 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.ember-breathe {
+  animation: ember-breathe 3.2s ease-in-out infinite;
+}
+
+.ember-sheet[data-state="open"] {
+  animation: ember-sheet-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ember-sheet[data-state="closed"] {
+  animation: ember-sheet-out 200ms ease-out;
+}
+
+.ember-dialog[data-state="open"] {
+  animation: ember-dialog-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ember-dialog[data-state="closed"] {
+  animation: ember-fade-out 120ms ease-out;
+}
+
+.ember-overlay[data-state="open"] {
+  animation: ember-fade-in 200ms ease-out;
+}
+
+.ember-overlay[data-state="closed"] {
+  animation: ember-fade-out 120ms ease-out;
+}
+
+.ember-popover[data-state="open"] {
+  animation: ember-fade-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation: none !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

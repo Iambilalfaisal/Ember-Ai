@@ -1,0 +1,6 @@
+/* Import this once, after tailwindcss: @import "@ember/ui/styles.css"; */
+@import "@fontsource-variable/schibsted-grotesk/wght.css";
+@import "./tokens.css";
+@import "./theme.css";
+@import "./base.css";
+@import "./motion.css";

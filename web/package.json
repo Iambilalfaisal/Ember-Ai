@@ -12,6 +12,7 @@
     "e2e": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.2",
     "@playwright/test": "1.65.0",
     "@tailwindcss/postcss": "4.3.5",
     "@testing-library/dom": "10.4.2",
