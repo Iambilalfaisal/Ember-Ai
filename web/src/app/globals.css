@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@ember/ui/styles.css";
 
 /* Tailwind only scans the project it is built in; the shared packages hold classes too. */
 @source "../../../packages/ui/src";

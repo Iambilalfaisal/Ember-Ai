@@ -1,0 +1,41 @@
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: var(--ember-ash);
+    color: var(--ember-coal);
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--ember-ash);
+    color: var(--ember-coal);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  /* One focus style for everything: a 2 px coal outline with a 2 px offset. */
+  :focus-visible {
+    outline: 2px solid var(--ember-coal);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--ember-glow);
+    color: #1e2430;
+  }
+}

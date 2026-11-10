@@ -1,0 +1,51 @@
+/*
+ * Ember design tokens (docs/ui-design-prompt.md section 3).
+ * Light is the default. Dark applies for data-theme="dark", or for the system setting unless
+ * data-theme="light" is set. Keep the values in step with ../tokens.ts (a test checks it).
+ */
+:root {
+  --ember-ash: #eef0f2;
+  --ember-paper: #ffffff;
+  --ember-coal: #1e2430;
+  --ember-smoke: #5e6776;
+  --ember-cinder: #d8dce2;
+  --ember-glow: #e9a23b;
+  --ember-glow-ink: #8f560c;
+  --ember-frost: #6f8fb8;
+  --ember-moss: #3e8e6e;
+  --ember-flare: #c9443a;
+  --ember-shadow-float: 0 12px 32px -12px rgb(30 36 48 / 0.28);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ember-ash: #171c25;
+    --ember-paper: #1f2531;
+    --ember-coal: #e8eaee;
+    --ember-smoke: #a3aab7;
+    --ember-cinder: #2e3542;
+    --ember-glow: #f0ae4a;
+    --ember-glow-ink: #f6c47a;
+    --ember-frost: #86a3c9;
+    --ember-moss: #5fb08e;
+    --ember-flare: #e2685f;
+    --ember-shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ember-ash: #171c25;
+  --ember-paper: #1f2531;
+  --ember-coal: #e8eaee;
+  --ember-smoke: #a3aab7;
+  --ember-cinder: #2e3542;
+  --ember-glow: #f0ae4a;
+  --ember-glow-ink: #f6c47a;
+  --ember-frost: #86a3c9;
+  --ember-moss: #5fb08e;
+  --ember-flare: #e2685f;
+  --ember-shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}

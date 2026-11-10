@@ -1,0 +1,57 @@
+/* Maps the tokens to Tailwind utilities: bg-ash, text-coal, border-cinder, rounded-panel and so on. */
+@theme inline {
+  --color-*: initial;
+  --color-ash: var(--ember-ash);
+  --color-paper: var(--ember-paper);
+  --color-coal: var(--ember-coal);
+  --color-smoke: var(--ember-smoke);
+  --color-cinder: var(--ember-cinder);
+  --color-glow: var(--ember-glow);
+  --color-glow-ink: var(--ember-glow-ink);
+  --color-frost: var(--ember-frost);
+  --color-moss: var(--ember-moss);
+  --color-flare: var(--ember-flare);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: "Schibsted Grotesk Variable", "Segoe UI", system-ui, sans-serif;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 1.5;
+  --text-detail: 13px;
+  --text-detail--line-height: 1.5;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.5;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.25;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 1.25;
+
+  --radius-*: initial;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-sheet: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-*: initial;
+  --shadow-float: var(--ember-shadow-float);
+}
+
+/* Motion tokens (section 3). Springs live in motion.ts because CSS cannot express them. */
+@utility transition-instant {
+  transition-property: color, background-color, border-color, opacity, box-shadow;
+  transition-duration: 120ms;
+  transition-timing-function: ease-out;
+}
+
+@utility transition-ui {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
