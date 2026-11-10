@@ -65,6 +65,17 @@ def test_upgrade_creates_identity_tables_and_downgrade_removes_them(database_url
 
 
 @pytest.mark.integration
+def test_upgrade_creates_the_ai_usage_table_and_downgrade_removes_it(database_url: str) -> None:
+    config = _alembic_config(database_url)
+
+    command.upgrade(config, "head")
+    assert "ai_usage" in _tables(database_url)
+
+    command.downgrade(config, "base")
+    assert "ai_usage" not in _tables(database_url)
+
+
+@pytest.mark.integration
 def test_downgrade_removes_pgvector_and_upgrade_is_repeatable(database_url: str) -> None:
     config = _alembic_config(database_url)
 

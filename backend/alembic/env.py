@@ -11,6 +11,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
+import ember.adapters
 import ember.modules
 from ember.core.config import get_settings
 from ember.core.models import Base
@@ -23,11 +24,12 @@ if config.config_file_name is not None and config.attributes.get("configure_logg
 
 
 def _import_module_models() -> None:
-    """Import ``ember.modules.<name>.models`` for every module so Base.metadata is complete."""
-    for module in pkgutil.iter_modules(ember.modules.__path__):
-        models = f"ember.modules.{module.name}.models"
-        if importlib.util.find_spec(models) is not None:
-            importlib.import_module(models)
+    """Import every ``models.py`` under modules and adapters so Base.metadata is complete."""
+    for package in (ember.modules, ember.adapters):
+        for module in pkgutil.iter_modules(package.__path__):
+            models = f"{package.__name__}.{module.name}.models"
+            if importlib.util.find_spec(models) is not None:
+                importlib.import_module(models)
 
 
 _import_module_models()

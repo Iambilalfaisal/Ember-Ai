@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from redis.asyncio import Redis
 
+from ember.adapters.ai.factory import build_ai_gateway
 from ember.core.config import Settings, get_settings
 from ember.core.db import create_engine, create_session_factory
 from ember.core.errors import register_error_handlers
@@ -43,12 +44,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     broker = build_broker(settings)
     import_module_tasks()
     registry.bind(broker)
+    # Validates ai_tasks.yaml now, so a bad file stops the app at startup.
+    ai_gateway = build_ai_gateway(settings, session_factory)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         await broker.startup()
         yield
         await broker.shutdown()
+        await ai_gateway.aclose()
         await authenticator.aclose()
         await redis.aclose()
         await engine.dispose()
@@ -63,6 +67,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.session_factory = session_factory
     app.state.event_bus = events
+    app.state.ai_gateway = ai_gateway
     app.state.authenticator = authenticator
     register_error_handlers(app)
     app.include_router(

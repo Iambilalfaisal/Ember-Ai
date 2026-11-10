@@ -1,4 +1,5 @@
 import asyncio
+import os
 import uuid
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
@@ -20,6 +21,16 @@ from ember.core.observability import setup_telemetry
 from ember.entrypoints.api import create_app
 
 BACKEND = Path(__file__).resolve().parent.parent
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Skip ``live`` tests (they call real vendors and cost money) unless explicitly requested."""
+    if os.environ.get("EMBER_RUN_LIVE_TESTS") == "1":
+        return
+    skip_live = pytest.mark.skip(reason="live test: set EMBER_RUN_LIVE_TESTS=1 to run")
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip_live)
 
 
 def make_settings(**overrides: object) -> Settings:
