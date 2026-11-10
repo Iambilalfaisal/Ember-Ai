@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Iterator
 
 import httpx
 import pytest
@@ -7,7 +6,6 @@ from fastapi import FastAPI
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import create_async_engine
 from testcontainers.community.postgres import PostgresContainer
-from testcontainers.community.redis import RedisContainer
 
 from ember.core.config import DbSettings, RedisSettings
 from ember.core.errors import register_error_handlers
@@ -88,13 +86,6 @@ async def test_api_ready_is_503_when_database_and_redis_are_unreachable() -> Non
 
 
 # --- against real services (needs Docker) ------------------------------------
-
-
-@pytest.fixture(scope="module")
-def redis_url() -> Iterator[str]:
-    with RedisContainer("redis:7") as container:
-        host = container.get_container_host_ip()
-        yield f"redis://{host}:{container.get_exposed_port(6379)}/0"
 
 
 @pytest.mark.integration

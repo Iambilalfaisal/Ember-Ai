@@ -50,7 +50,7 @@ packages = ["src/ember"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["src", "tests"]
+src = ["src", "tests", "../eval"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "T20", "SIM", "RUF"]
@@ -145,14 +145,15 @@ worker = { cmd = "taskiq worker ember.entrypoints.worker:create_broker", help = 
 scheduler = { cmd = "taskiq scheduler ember.entrypoints.worker:create_scheduler", help = "Run the scheduler of periodic (cron) jobs" }
 test = { cmd = "pytest", help = "Run the tests" }
 migrate = { cmd = "alembic upgrade head", help = "Apply database migrations" }
-openapi = { cmd = "python scripts/export_openapi.py", help = "Regenerate contracts/ from the app (script arrives in F8)" }
+openapi = { cmd = "python scripts/export_openapi.py", help = "Regenerate contracts/ (OpenAPI, TypeScript client, realtime protocol)" }
+eval = { cmd = "python ../eval/run.py", help = "Run the evaluation harness and write a report to eval/reports/ (--check-regression to compare)" }
 openapi-check = { cmd = "python scripts/check_openapi_drift.py", help = "Fail if contracts/ is out of date" }
 
 [tool.poe.tasks.lint]
-help = "ruff check and format check"
+help = "ruff check and format check (backend/ and eval/)"
 sequence = [
-    { cmd = "ruff check ." },
-    { cmd = "ruff format --check ." },
+    { cmd = "ruff check . ../eval" },
+    { cmd = "ruff format --check . ../eval" },
 ]
 
 [tool.poe.tasks.types]

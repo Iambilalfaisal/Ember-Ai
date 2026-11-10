@@ -20,7 +20,7 @@ from ember.adapters.ai.tracing import NullTracer
 from ember.core.tenancy import TenantContext
 from ember.modules.calls.live.pipeline import FakePipeline
 from ember.modules.calls.live.session import LiveRuntime
-from ember.modules.calls.live.store import RedisSessionStore, SessionStore
+from ember.modules.calls.live.store import KEY_PREFIX, RedisSessionStore, SessionStore
 from tests.modules.calls.live.support import (
     TENANT,
     FakeConnection,
@@ -104,10 +104,19 @@ async def test_pipeline_overhead_with_fakes_is_under_100_ms() -> None:
     assert_within_budget(await answer_times(InMemorySessionStore()))
 
 
+async def forget_live_sessions(client: Redis) -> None:
+    """Delete this test's sessions (fixed ids), so a Redis that outlives a run is harmless."""
+    keys = [key async for key in client.scan_iter(f"{KEY_PREFIX}:{TENANT}:*")]
+    if keys:
+        await client.delete(*keys)
+
+
 @pytest.fixture
 async def redis(redis_url: str) -> AsyncIterator[Redis]:
     client = Redis.from_url(redis_url, decode_responses=True)
+    await forget_live_sessions(client)  # a run less than a minute ago left its session behind
     yield client
+    await forget_live_sessions(client)
     await client.aclose()
 
 

@@ -1,0 +1,386 @@
+{
+  "$defs": {
+    "CardDelta": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CardDeltaPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "card.delta",
+          "default": "card.delta",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "CardDelta",
+      "type": "object"
+    },
+    "CardDeltaPayload": {
+      "properties": {
+        "card_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "text"
+      ],
+      "title": "CardDeltaPayload",
+      "type": "object"
+    },
+    "CardEnd": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CardEndPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "card.end",
+          "default": "card.end",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "CardEnd",
+      "type": "object"
+    },
+    "CardEndPayload": {
+      "properties": {
+        "card_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "cancelled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "status"
+      ],
+      "title": "CardEndPayload",
+      "type": "object"
+    },
+    "CardNotConfirmed": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CardNotConfirmedPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "card.not_confirmed",
+          "default": "card.not_confirmed",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "CardNotConfirmed",
+      "type": "object"
+    },
+    "CardNotConfirmedPayload": {
+      "properties": {
+        "card_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reason": {
+          "enum": [
+            "low_confidence",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "utterance_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "utterance_id",
+        "reason",
+        "card_id"
+      ],
+      "title": "CardNotConfirmedPayload",
+      "type": "object"
+    },
+    "CardStart": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CardStartPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "card.start",
+          "default": "card.start",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "CardStart",
+      "type": "object"
+    },
+    "CardStartPayload": {
+      "properties": {
+        "card_id": {
+          "type": "string"
+        },
+        "utterance_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "utterance_id"
+      ],
+      "title": "CardStartPayload",
+      "type": "object"
+    },
+    "Error": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ErrorPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "error",
+          "default": "error",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "ErrorMessage",
+      "type": "object"
+    },
+    "ErrorPayload": {
+      "properties": {
+        "code": {
+          "enum": [
+            "invalid_message",
+            "session_not_started",
+            "already_started",
+            "call_id_mismatch",
+            "out_of_order",
+            "message_too_large",
+            "session_ended",
+            "session_expired",
+            "forbidden",
+            "start_timeout",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "fatal": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "fatal"
+      ],
+      "title": "ErrorPayload",
+      "type": "object"
+    },
+    "SessionReady": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionReadyPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "session.ready",
+          "default": "session.ready",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "SessionReady",
+      "type": "object"
+    },
+    "SessionReadyPayload": {
+      "properties": {
+        "last_client_seq": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "resumed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "resumed",
+        "last_client_seq"
+      ],
+      "title": "SessionReadyPayload",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "card.delta": "#/$defs/CardDelta",
+      "card.end": "#/$defs/CardEnd",
+      "card.not_confirmed": "#/$defs/CardNotConfirmed",
+      "card.start": "#/$defs/CardStart",
+      "error": "#/$defs/Error",
+      "session.ready": "#/$defs/SessionReady"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/SessionReady"
+    },
+    {
+      "$ref": "#/$defs/CardStart"
+    },
+    {
+      "$ref": "#/$defs/CardDelta"
+    },
+    {
+      "$ref": "#/$defs/CardEnd"
+    },
+    {
+      "$ref": "#/$defs/CardNotConfirmed"
+    },
+    {
+      "$ref": "#/$defs/Error"
+    }
+  ],
+  "title": "ServerMessage"
+}

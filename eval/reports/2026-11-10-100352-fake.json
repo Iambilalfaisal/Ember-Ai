@@ -1,0 +1,260 @@
+{
+  "report_version": 1,
+  "created_at": "2026-11-10T10:03:52+00:00",
+  "setup": "fake",
+  "inputs_sha256": "603299498ec2cb3069855df9761aa730f5e2a40395a8fb45b453f5e8c3cf2840",
+  "dataset": {
+    "path": "sample.jsonl",
+    "items": 14,
+    "answerable": 10,
+    "unanswerable": 4,
+    "documents": 5,
+    "inputs_sha256": "603299498ec2cb3069855df9761aa730f5e2a40395a8fb45b453f5e8c3cf2840"
+  },
+  "config": {
+    "setup": {
+      "description": "Keyword search over the sample documents, answered by an extractive fake model. Runs offline and gives the same scores every time: it proves the harness, not the product.",
+      "search": {
+        "kind": "keyword",
+        "top_k": 3,
+        "min_score": 0.5
+      },
+      "answer": {
+        "provider": "extractive-fake",
+        "min_overlap": 0.5
+      }
+    },
+    "scoring": {
+      "correct_min_recall": 0.6,
+      "grounded_min_overlap": 0.8,
+      "regression_tolerance": 0.0
+    },
+    "prompt": {
+      "name": "live_answer",
+      "version": 1
+    },
+    "ai_task": {
+      "task": "live_answer",
+      "configured_provider": "openai",
+      "configured_model": "gpt-4o",
+      "answered_by": "extractive-fake"
+    }
+  },
+  "metrics": {
+    "items": 14,
+    "answerable": 10,
+    "unanswerable": 4,
+    "correctness": 0.5,
+    "groundedness": 1.0,
+    "not_confirmed_precision": 0.6666666666666666,
+    "not_confirmed_recall": 1.0,
+    "overall_accuracy": 0.6428571428571429,
+    "source_retrieved": 1.0,
+    "errors": 0,
+    "latency_ms": {
+      "total_p50": 0.1344449999578501,
+      "total_p95": 1.1826899999505258,
+      "first_token_p50": 0.06078399997022643,
+      "first_token_p95": 0.15915599988147733,
+      "retrieve_p50": 0.02533300016693829
+    }
+  },
+  "items": [
+    {
+      "id": "q01",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": true,
+      "answer_recall": 1.0,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.833,
+      "answer": "The Team plan costs 29 dollars per user per month and adds shared dashboards and priority email support.",
+      "total_ms": 1.18,
+      "first_token_ms": 0.16
+    },
+    {
+      "id": "q02",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": false,
+      "answer_recall": 0.455,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.8,
+      "answer": "No credit card is needed to start the trial.",
+      "total_ms": 0.23,
+      "first_token_ms": 0.09
+    },
+    {
+      "id": "q03",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": false,
+      "answer_recall": 0.111,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 1.0,
+      "answer": "Brightwave is hosted in Amazon Web Services data centres.",
+      "total_ms": 0.29,
+      "first_token_ms": 0.12
+    },
+    {
+      "id": "q04",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": true,
+      "answer_recall": 1.0,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 1.0,
+      "answer": "Brightwave holds a SOC 2 Type II report, which is renewed every year.",
+      "total_ms": 0.16,
+      "first_token_ms": 0.05
+    },
+    {
+      "id": "q05",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": false,
+      "answer_recall": 0.444,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.6,
+      "answer": "The Enterprise plan has custom pricing and adds single sign-on, a dedicated account manager and a 99.9 percent uptime guarantee.",
+      "total_ms": 0.19,
+      "first_token_ms": 0.06
+    },
+    {
+      "id": "q06",
+      "answerable": true,
+      "outcome": "model_declined",
+      "correct": false,
+      "answer_recall": 0.0,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": true,
+      "top_score": 0.5,
+      "answer": "",
+      "total_ms": 0.15,
+      "first_token_ms": 0.08
+    },
+    {
+      "id": "q07",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": true,
+      "answer_recall": 1.0,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.833,
+      "answer": "Enterprise customers get a reply within 1 hour at any time, day or night, and a named support engineer.",
+      "total_ms": 0.2,
+      "first_token_ms": 0.06
+    },
+    {
+      "id": "q08",
+      "answerable": true,
+      "outcome": "low_confidence",
+      "correct": false,
+      "answer_recall": 0.0,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": true,
+      "top_score": 0.0,
+      "answer": "",
+      "total_ms": 0.02,
+      "first_token_ms": null
+    },
+    {
+      "id": "q09",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": true,
+      "answer_recall": 1.0,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.667,
+      "answer": "The API allows 1,000 requests per minute per customer.",
+      "total_ms": 0.13,
+      "first_token_ms": 0.04
+    },
+    {
+      "id": "q10",
+      "answerable": true,
+      "outcome": "answered",
+      "correct": true,
+      "answer_recall": 1.0,
+      "grounded": true,
+      "groundedness": 1.0,
+      "source_retrieved": true,
+      "top_score": 0.75,
+      "answer": "Annual billing gives a 15 percent discount on every plan.",
+      "total_ms": 0.13,
+      "first_token_ms": 0.05
+    },
+    {
+      "id": "q11",
+      "answerable": false,
+      "outcome": "low_confidence",
+      "correct": true,
+      "answer_recall": null,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": null,
+      "top_score": 0.25,
+      "answer": "",
+      "total_ms": 0.02,
+      "first_token_ms": null
+    },
+    {
+      "id": "q12",
+      "answerable": false,
+      "outcome": "low_confidence",
+      "correct": true,
+      "answer_recall": null,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": null,
+      "top_score": 0.0,
+      "answer": "",
+      "total_ms": 0.02,
+      "first_token_ms": null
+    },
+    {
+      "id": "q13",
+      "answerable": false,
+      "outcome": "low_confidence",
+      "correct": true,
+      "answer_recall": null,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": null,
+      "top_score": 0.4,
+      "answer": "",
+      "total_ms": 0.03,
+      "first_token_ms": null
+    },
+    {
+      "id": "q14",
+      "answerable": false,
+      "outcome": "low_confidence",
+      "correct": true,
+      "answer_recall": null,
+      "grounded": null,
+      "groundedness": null,
+      "source_retrieved": null,
+      "top_score": 0.0,
+      "answer": "",
+      "total_ms": 0.02,
+      "first_token_ms": null
+    }
+  ]
+}

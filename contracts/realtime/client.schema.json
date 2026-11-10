@@ -1,0 +1,274 @@
+{
+  "$defs": {
+    "CardFeedback": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/CardFeedbackPayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "card.feedback",
+          "default": "card.feedback",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "CardFeedback",
+      "type": "object"
+    },
+    "CardFeedbackPayload": {
+      "properties": {
+        "card_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,64}$",
+          "type": "string"
+        },
+        "rating": {
+          "enum": [
+            "helpful",
+            "not_helpful"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "rating"
+      ],
+      "title": "CardFeedbackPayload",
+      "type": "object"
+    },
+    "SessionEnd": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionEndPayload",
+          "default": {}
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "session.end",
+          "default": "session.end",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "SessionEnd",
+      "type": "object"
+    },
+    "SessionEndPayload": {
+      "properties": {},
+      "title": "SessionEndPayload",
+      "type": "object"
+    },
+    "SessionStart": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionStartPayload",
+          "default": {}
+        },
+        "seq": {
+          "const": 0,
+          "default": 0,
+          "type": "integer"
+        },
+        "type": {
+          "const": "session.start",
+          "default": "session.start",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "SessionStart",
+      "type": "object"
+    },
+    "SessionStartPayload": {
+      "description": "Empty for now. Account context and similar arrive here when the live pipeline needs them.",
+      "properties": {},
+      "title": "SessionStartPayload",
+      "type": "object"
+    },
+    "TranscriptFinal": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/UtterancePayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "transcript.final",
+          "default": "transcript.final",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "TranscriptFinal",
+      "type": "object"
+    },
+    "TranscriptPartial": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/UtterancePayload"
+        },
+        "seq": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "type": {
+          "const": "transcript.partial",
+          "default": "transcript.partial",
+          "type": "string"
+        },
+        "v": {
+          "const": 1,
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "v",
+        "call_id",
+        "seq",
+        "type",
+        "payload"
+      ],
+      "title": "TranscriptPartial",
+      "type": "object"
+    },
+    "UtterancePayload": {
+      "properties": {
+        "speaker": {
+          "enum": [
+            "rep",
+            "customer",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "utterance_id": {
+          "pattern": "^[A-Za-z0-9._-]{1,64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "utterance_id",
+        "speaker",
+        "text"
+      ],
+      "title": "UtterancePayload",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "card.feedback": "#/$defs/CardFeedback",
+      "session.end": "#/$defs/SessionEnd",
+      "session.start": "#/$defs/SessionStart",
+      "transcript.final": "#/$defs/TranscriptFinal",
+      "transcript.partial": "#/$defs/TranscriptPartial"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/SessionStart"
+    },
+    {
+      "$ref": "#/$defs/TranscriptPartial"
+    },
+    {
+      "$ref": "#/$defs/TranscriptFinal"
+    },
+    {
+      "$ref": "#/$defs/CardFeedback"
+    },
+    {
+      "$ref": "#/$defs/SessionEnd"
+    }
+  ],
+  "title": "ClientMessage"
+}

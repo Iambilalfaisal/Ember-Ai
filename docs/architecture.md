@@ -163,6 +163,29 @@ desktop --Authorization: Bearer--> /ws/v1/calls/{call_id}      (accepted, then t
 - **Try it:** `uv run poe realtime`, then connect with any WebSocket client that can set the
   `Authorization` header (a dev token from `scripts/dev_token.py` works in `local`).
 
+## Contracts
+
+The desktop and web clients are TypeScript, so what they call is generated from the backend, never
+re-typed ([ADR 0009](decisions/0009-contracts.md)):
+
+```
+HTTP API app  --openapi-->  contracts/openapi.json  --openapi-typescript-->  contracts/ts/api/
+calls/live/protocol.py  --JSON Schema-->  contracts/realtime/*.schema.json  --json2ts-->  contracts/ts/realtime/
+```
+
+`uv run poe openapi` regenerates `contracts/`; `uv run poe openapi-check` (part of `uv run poe check` and
+of CI) fails if the committed files differ from what the backend produces. A change to a route, a schema or a
+live-call message therefore lands together with its regenerated contract. See `contracts/README.md` for how
+the clients use it.
+
+## Evaluation
+
+`eval/` asks golden questions the way the live pipeline will (search, then the `live_answer` task through the
+real gateway and prompt) and writes a dated report of correctness, groundedness, "Not confirmed" precision and
+recall, and latency ([ADR 0010](decisions/0010-evaluation-harness.md)). `uv run poe eval --check-regression`
+fails if a score fell since the latest comparable report; AGENTS.md section 7 requires that for any prompt, model,
+chunking or retrieval change. Today it runs offline against fakes. See `eval/README.md` for the report format.
+
 ## Adding a module
 
 ```

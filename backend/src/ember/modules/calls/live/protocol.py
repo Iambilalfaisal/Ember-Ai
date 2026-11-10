@@ -36,7 +36,7 @@ gets a new one.
 Transcript text is untrusted input. It is data, never instructions, and it is never logged.
 """
 
-from typing import Annotated, Final, Literal
+from typing import Annotated, Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
@@ -77,13 +77,21 @@ ErrorCode = Literal[
 class Payload(BaseModel):
     """Payloads ignore unknown fields, so a newer desktop can add one without breaking v1."""
 
-    model_config = ConfigDict(extra="ignore", strict=True, frozen=True)
+    # As for the envelope: defaulted fields (``card_id`` of ``card.not_confirmed``) are on the wire.
+    model_config = ConfigDict(
+        extra="ignore", strict=True, frozen=True, json_schema_serialization_defaults_required=True
+    )
 
 
 class Envelope(BaseModel):
     """Envelopes are strict: changing one needs a new protocol version."""
 
-    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    # Fields with defaults (``v``, ``type``, ``seq`` of ``session.start``, ``payload``) are always
+    # on the wire, so the published JSON Schema must list them as required: a sender that leaves
+    # out ``type`` would not match any message (the receiver picks the model by ``type``).
+    model_config = ConfigDict(
+        extra="forbid", strict=True, frozen=True, json_schema_serialization_defaults_required=True
+    )
 
     v: Literal[1] = PROTOCOL_VERSION
     call_id: str = Field(min_length=1, max_length=64)
@@ -218,6 +226,10 @@ class ErrorPayload(Payload):
 
 
 class Error(ServerEnvelope):
+    # Titled differently in the published schema: a generated TypeScript ``Error`` would shadow
+    # the language's own.
+    model_config = ConfigDict(title="ErrorMessage")
+
     type: Literal["error"] = "error"
     payload: ErrorPayload
 
@@ -248,6 +260,66 @@ class ProtocolError(Exception):
     def __init__(self, code: ErrorCode) -> None:
         super().__init__(code)
         self.code = code
+
+
+_server_message_adapter: TypeAdapter[ServerMessage] = TypeAdapter(
+    Annotated[ServerMessage, Field(discriminator="type")]
+)
+
+
+def _without_field_titles(node: Any) -> Any:
+    """Drop Pydantic's generated field titles ("Call Id", "Seq" ...) from a JSON Schema.
+
+    The model titles stay: they name the generated types. A field title would make the
+    TypeScript generator emit a type alias per field name, which collide across messages.
+    """
+    if isinstance(node, list):
+        return [_without_field_titles(item) for item in node]
+    if not isinstance(node, dict):
+        return node
+    result: dict[str, Any] = {}
+    for key, value in node.items():
+        if key == "properties" and isinstance(value, dict):
+            result[key] = {
+                name: _without_field_titles({k: v for k, v in field.items() if k != "title"})
+                for name, field in value.items()
+            }
+        else:
+            result[key] = _without_field_titles(value)
+    return result
+
+
+def json_schemas() -> dict[str, dict[str, Any]]:
+    """JSON Schema of every message, for the generated contracts (``contracts/``).
+
+    Returns ``{"client": ..., "server": ...}``: one schema per direction, each a ``oneOf`` over the
+    message types with a ``type`` discriminator. Both describe the messages as they appear *on the
+    wire* (every field present), which is what a sender must produce and a receiver can rely on.
+    The output is deterministic, so the contracts only change when the protocol does.
+    """
+    client = _without_field_titles(_client_message_adapter.json_schema(mode="serialization"))
+    server = _without_field_titles(_server_message_adapter.json_schema(mode="serialization"))
+    client["title"] = "ClientMessage"
+    server["title"] = "ServerMessage"
+    return {"client": client, "server": server}
+
+
+def constants() -> dict[str, Any]:
+    """The protocol's constants, for the generated contracts: version, id pattern, close codes."""
+    return {
+        "PROTOCOL_VERSION": PROTOCOL_VERSION,
+        "ID_PATTERN": ID_PATTERN,
+        "CLOSE_CODES": {
+            "NORMAL": CLOSE_NORMAL,
+            "TOO_LARGE": CLOSE_TOO_LARGE,
+            "INTERNAL": CLOSE_INTERNAL,
+            "PROTOCOL": CLOSE_PROTOCOL,
+            "UNAUTHORIZED": CLOSE_UNAUTHORIZED,
+            "FORBIDDEN": CLOSE_FORBIDDEN,
+            "TIMEOUT": CLOSE_TIMEOUT,
+            "CONFLICT": CLOSE_CONFLICT,
+        },
+    }
 
 
 def parse_client_message(raw: str) -> ClientMessage:

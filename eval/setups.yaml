@@ -1,0 +1,31 @@
+# What the harness measures, and how it decides. Thresholds live here, not in code (AGENTS.md
+# section 4). A "setup" is one way of answering: retrieval settings plus the model that reads.
+#
+# Change a setup (or add one, as spike S2 will) and run `uv run poe eval --setup <name>`; the
+# report records the setup, so a score can always be traced back to what produced it.
+
+scoring:
+  # An answer is correct when it contains at least this share of the expected answer's
+  # meaningful words. (A stand-in for an LLM judge: see eval/README.md.)
+  correct_min_recall: 0.6
+  # An answer is grounded when at least this share of its meaningful words appear in the
+  # passages the model was given.
+  grounded_min_overlap: 0.8
+  # --check-regression fails when a quality score drops by more than this against the latest
+  # comparable report. 0 means any drop fails.
+  regression_tolerance: 0.0
+
+setups:
+  fake:
+    description: >-
+      Keyword search over the sample documents, answered by an extractive fake model. Runs offline
+      and gives the same scores every time: it proves the harness, not the product.
+    search:
+      kind: keyword
+      top_k: 3
+      # Below this match the answer is "Not confirmed" without asking the model (AGENTS.md section 7).
+      min_score: 0.5
+    answer:
+      provider: extractive-fake
+      # The fake model replies "Not confirmed." when no sentence matches the question this well.
+      min_overlap: 0.5

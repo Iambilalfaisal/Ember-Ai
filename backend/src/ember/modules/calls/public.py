@@ -1,7 +1,8 @@
 """The only file other modules (and entrypoints and scripts) may import from calls.
 
-For now this is what the realtime process needs to serve live calls: the WebSocket router and a
-function that builds what every live session shares.
+For now this is what the realtime process needs to serve live calls (the WebSocket router and a
+function that builds what every live session shares), and what ``scripts/export_openapi.py`` needs
+to publish the live protocol to the desktop (its JSON Schemas and constants).
 """
 
 from redis.asyncio import Redis
@@ -9,11 +10,19 @@ from redis.asyncio import Redis
 from ember.adapters.ai.gateway import AiGateway
 from ember.core.config import Settings
 from ember.modules.calls.live.pipeline import FakePipeline
+from ember.modules.calls.live.protocol import constants as live_protocol_constants
+from ember.modules.calls.live.protocol import json_schemas as live_protocol_schemas
 from ember.modules.calls.live.router import router as live_router
 from ember.modules.calls.live.session import LiveRuntime
 from ember.modules.calls.live.store import RedisSessionStore
 
-__all__ = ["LiveRuntime", "build_live_runtime", "live_router"]
+__all__ = [
+    "LiveRuntime",
+    "build_live_runtime",
+    "live_protocol_constants",
+    "live_protocol_schemas",
+    "live_router",
+]
 
 
 def build_live_runtime(settings: Settings, *, redis: Redis, gateway: AiGateway) -> LiveRuntime:

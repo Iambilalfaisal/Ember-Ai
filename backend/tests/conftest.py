@@ -22,6 +22,21 @@ from ember.entrypoints.api import create_app
 
 BACKEND = Path(__file__).resolve().parent.parent
 
+# CI runs Postgres and Redis as service containers and points the tests at them with these
+# variables; without them the tests start their own throwaway containers (needs Docker).
+POSTGRES_URL_VARIABLE = "EMBER_TEST_POSTGRES_URL"
+REDIS_URL_VARIABLE = "EMBER_TEST_REDIS_URL"
+
+
+class RunningPostgres:
+    """A Postgres that is already running, for tests that only need its connection URL."""
+
+    def __init__(self, url: str) -> None:
+        self._url = url
+
+    def get_connection_url(self) -> str:
+        return self._url
+
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Skip ``live`` tests (they call real vendors and cost money) unless explicitly requested."""
@@ -71,19 +86,30 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 
 
 @pytest.fixture(scope="session")
-def postgres() -> Iterator[PostgresContainer]:
+def postgres() -> Iterator[PostgresContainer | RunningPostgres]:
+    """A Postgres with pgvector: ``EMBER_TEST_POSTGRES_URL`` (an ``postgresql+asyncpg://`` URL
+    of a server the test user may create databases on), or else a throwaway container."""
+    if external := os.environ.get(POSTGRES_URL_VARIABLE):
+        yield RunningPostgres(external)
+        return
     with PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg") as container:
         yield container
 
 
 @pytest.fixture(scope="session")
 def redis_url() -> Iterator[str]:
-    """URL of a throwaway Redis. Tests that share it use their own queue names."""
+    """URL of a Redis: ``EMBER_TEST_REDIS_URL``, or else a throwaway container.
+
+    Tests that share it use their own queue names and call ids.
+    """
+    if external := os.environ.get(REDIS_URL_VARIABLE):
+        yield external
+        return
     with RedisContainer("redis:7") as container:
         yield f"redis://{container.get_container_host_ip()}:{container.get_exposed_port(6379)}/0"
 
 
-def _run_admin_sql(container: PostgresContainer, sql: str) -> None:
+def _run_admin_sql(container: PostgresContainer | RunningPostgres, sql: str) -> None:
     dsn = container.get_connection_url().replace("+asyncpg", "")
 
     async def run() -> None:
@@ -97,7 +123,7 @@ def _run_admin_sql(container: PostgresContainer, sql: str) -> None:
 
 
 @pytest.fixture
-def database_url(postgres: PostgresContainer) -> str:
+def database_url(postgres: PostgresContainer | RunningPostgres) -> str:
     """SQLAlchemy async URL of a new empty database inside the shared container."""
     name = f"t_{uuid.uuid4().hex[:12]}"
     _run_admin_sql(postgres, f'CREATE DATABASE "{name}"')
