@@ -29,7 +29,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
         return
     skip_live = pytest.mark.skip(reason="live test: set EMBER_RUN_LIVE_TESTS=1 to run")
     for item in items:
-        if "live" in item.keywords:
+        # The marker, not item.keywords: keywords also include directory names (tests/.../live/).
+        if item.get_closest_marker("live") is not None:
             item.add_marker(skip_live)
 
 

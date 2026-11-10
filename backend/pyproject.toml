@@ -81,6 +81,9 @@ markers = [
 filterwarnings = [
     # taskiq-dependencies still throws into generator dependencies with the old 3-argument form.
     "ignore:the \\(type, exc, tb\\) signature of athrow\\(\\) is deprecated:DeprecationWarning",
+    # The WebSocket tests need starlette's TestClient, which now asks for httpx2. A new
+    # dependency is not worth a warning; revisit when starlette drops httpx support.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",
 ]
 
 # --- import-linter ----------------------------------------------------------
@@ -113,6 +116,22 @@ forbidden_modules = [
     "ember.modules.identity.tasks",
 ]
 # Reaching private files through <name>.public is the intended route.
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "other modules use calls only through its public interface"
+type = "forbidden"
+source_modules = ["ember.modules.*"]
+forbidden_modules = [
+    "ember.modules.calls.events",
+    "ember.modules.calls.live",  # the live-call package is private too (not a single file)
+    "ember.modules.calls.models",
+    "ember.modules.calls.repository",
+    "ember.modules.calls.router",
+    "ember.modules.calls.schemas",
+    "ember.modules.calls.service",
+    "ember.modules.calls.tasks",
+]
 allow_indirect_imports = true
 
 # --- poethepoet -------------------------------------------------------------

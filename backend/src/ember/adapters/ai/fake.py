@@ -37,6 +37,14 @@ class InMemoryUsageRecorder:
         self.records.append(usage)
 
 
+class DiscardUsageRecorder:
+    """Drops usage records. For fake providers that run outside tests: their calls cost nothing,
+    and a stored row would show up in ``ai_usage`` as real spend."""
+
+    async def record(self, usage: UsageRecord) -> None:
+        return None
+
+
 @dataclass(frozen=True, slots=True)
 class _Fault:
     error: Exception | None

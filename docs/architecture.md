@@ -10,7 +10,7 @@ reference example.
 | Entrypoint | Purpose |
 |---|---|
 | `entrypoints/api.py` | HTTP API (`/api/v1`) |
-| `entrypoints/realtime.py` | WebSocket live-call sessions (later) |
+| `entrypoints/realtime.py` | WebSocket live-call sessions (`uv run poe realtime`) |
 | `entrypoints/worker.py` | Background jobs and the scheduler (`uv run poe worker`, `uv run poe scheduler`) |
 
 All three import the same modules. An entrypoint only wires things together: it builds the
@@ -137,6 +137,31 @@ limits or fallback, edit `ai_tasks.yaml`; its prices live there too.
 Prompts are files, `modules/<m>/prompts/<name>.v<N>.md`, loaded with
 `PromptLibrary(folder).load(name, version=N)`. Run the live smoke test (a few cents, needs
 `EMBER_AI__OPENAI_API_KEY`) with `EMBER_RUN_LIVE_TESTS=1 uv run pytest -m live`.
+
+## Live calls (realtime)
+
+The desktop streams transcript text to the realtime process over one WebSocket per call
+([ADR 0008](decisions/0008-realtime-skeleton.md)); it gets answer cards back, streamed word by word.
+The pipeline is a **fake** for now: it proves the plumbing and the latency budget, nothing more.
+
+```
+desktop --Authorization: Bearer--> /ws/v1/calls/{call_id}      (accepted, then token checked)
+  session.start (seq 0)         ->  session.ready {resumed, last_client_seq}
+  transcript.final (seq n)      ->  Redis: claim n   ->  queue  ->  pipeline
+                                    detect -> rewrite -> retrieve -> generate (gateway, streamed)
+                                <-  card.start, card.delta ..., card.end      (or card.not_confirmed)
+  session.end                   ->  connection closed (1000)
+```
+
+- **Protocol:** `modules/calls/live/protocol.py`. One envelope `{v, type, call_id, seq, payload}`; the
+  desktop numbers its messages for the whole call, so after a reconnect it re-sends what came after
+  `last_client_seq` and the server acts on each number once.
+- **State:** one Redis hash per call (`ember:live:<tenant>:<call>`): owner, status, last number. No
+  transcript text.
+- **Pipeline:** `LivePipeline.answer(utterance, emit)`. Swap `FakePipeline` for the real one; the session,
+  numbering and resume stay as they are.
+- **Try it:** `uv run poe realtime`, then connect with any WebSocket client that can set the
+  `Authorization` header (a dev token from `scripts/dev_token.py` works in `local`).
 
 ## Adding a module
 

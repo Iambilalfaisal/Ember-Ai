@@ -71,6 +71,23 @@ class AiSettings(BaseModel):
     """Change only to use a compatible gateway or proxy."""
 
 
+class RealtimeSettings(BaseModel):
+    """The live-call WebSocket service (``entrypoints/realtime.py``)."""
+
+    session_ttl_seconds: int = Field(default=4 * 3600, gt=0)
+    """How long a call's state stays in Redis after its last message. A desktop that reconnects
+    within this time resumes the call."""
+    ended_session_retention_seconds: int = Field(default=600, gt=0)
+    """How long the state of a call that ended normally is kept, so a repeated ``session.end``
+    or a late reconnect gets a clear answer instead of starting a new session."""
+    max_message_bytes: int = Field(default=64 * 1024, gt=0)
+    """Largest WebSocket message accepted from the desktop. Bigger ones close the connection."""
+    start_timeout_seconds: float = Field(default=10.0, gt=0)
+    """How long a connected desktop may stay silent before sending ``session.start``."""
+    redis_timeout_seconds: float = Field(default=2.0, gt=0)
+    """Connect and read timeout for the session-state Redis, so a stalled one cannot hang a call."""
+
+
 class SttSettings(BaseModel):
     api_key: SecretStr | None = None
 
@@ -107,6 +124,7 @@ class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     tasks: TasksSettings = TasksSettings()
     ai: AiSettings = AiSettings()
+    realtime: RealtimeSettings = RealtimeSettings()
     stt: SttSettings = SttSettings()
     storage: StorageSettings = StorageSettings()
     observability: ObservabilitySettings = ObservabilitySettings()

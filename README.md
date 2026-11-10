@@ -14,6 +14,7 @@ uv run pre-commit install        # run ruff on every commit
 uv run poe dev                   # start Postgres and Redis (needs Docker)
 uv run poe migrate               # apply database migrations
 uv run poe api                   # run the HTTP API (port 8000)
+uv run poe realtime              # run the live-call WebSocket service (port 8001)
 uv run poe worker                # run the background worker (needs Redis from `poe dev`)
 uv run poe scheduler             # run periodic (cron) jobs, once any exist
 uv run poe check                 # lint, types, import rules, tests, OpenAPI drift
