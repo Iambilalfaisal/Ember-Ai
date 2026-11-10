@@ -24,6 +24,7 @@ import asyncio
 import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
@@ -32,7 +33,7 @@ from typing import Annotated, Any, Protocol
 import httpx
 import jwt
 import structlog
-from fastapi import Depends, Request
+from fastapi import Depends, Request, WebSocket
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from ember.core.config import Settings
@@ -471,3 +472,32 @@ def require_role(*roles: Role) -> Callable[[AuthenticatedUser], Awaitable[Authen
         return user
 
     return dependency
+
+
+@asynccontextmanager
+async def websocket_user(websocket: WebSocket, *roles: Role) -> AsyncIterator[AuthenticatedUser]:
+    """Authenticate a WebSocket connection and set the tenant context until the block ends.
+
+    The token comes from the ``Authorization: Bearer`` header of the handshake, the same token
+    an HTTP request carries. It is never read from the URL: query strings end up in access logs.
+    With ``roles``, the user needs at least one of them (as for :func:`require_role`).
+
+    Raises:
+        Unauthorized: no bearer token, or the token is not valid.
+        Forbidden: the token is valid but not linked to an Ember account, or the role is missing.
+        UpstreamUnavailable: Entra's signing keys could not be fetched.
+    """
+    scheme, _, token = websocket.headers.get("authorization", "").partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise Unauthorized("A bearer access token is required.")
+    authenticator: Authenticator = websocket.app.state.authenticator
+    user = await authenticator.authenticate(token.strip())
+    if roles and user.roles.isdisjoint(roles):
+        logger.info("auth.role_denied", user_id=str(user.user_id))
+        raise Forbidden("Your role does not allow this action.")
+    tenant_token = TenantContext.set(user.tenant_id)
+    bind_tenant_id(str(user.tenant_id))
+    try:
+        yield user
+    finally:
+        TenantContext.reset(tenant_token)
