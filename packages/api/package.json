@@ -1,0 +1,20 @@
+{
+  "name": "@ember/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Domain schemas, typed client, Query hooks and the mock backend (FE2). The schemas are the draft API contract.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3",
+    "vite": "8.3.7",
+    "vitest": "5.1.0"
+  }
+}
