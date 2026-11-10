@@ -1,0 +1,30 @@
+{
+  "name": "ember",
+  "private": true,
+  "description": "Ember frontend workspace: the Next.js app (web/), the shared packages (packages/*) and later the Electron app (desktop/).",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @ember/web dev",
+    "build": "pnpm --filter @ember/web build",
+    "lint": "eslint web packages",
+    "format": "prettier --write web packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs eslint.architecture.mjs eslint.architecture.d.mts .prettierrc.json",
+    "format:check": "prettier --check web packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs eslint.architecture.mjs eslint.architecture.d.mts .prettierrc.json",
+    "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 test",
+    "e2e": "pnpm --filter @ember/web e2e",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "eslint-import-resolver-typescript": "3.10.1",
+    "eslint-plugin-boundaries": "7.4.2",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.2"
+  }
+}

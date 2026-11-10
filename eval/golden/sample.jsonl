@@ -1,0 +1,14 @@
+{"id": "q01", "question": "How much does the Team plan cost per user?", "expected_answer": "The Team plan costs 29 dollars per user per month.", "source_doc": "pricing.md", "answerable": true}
+{"id": "q02", "question": "Is there a free trial, and do we need a credit card?", "expected_answer": "All plans include a 14-day free trial, and no credit card is needed.", "source_doc": "pricing.md", "answerable": true}
+{"id": "q03", "question": "Where can our data be hosted if we are in the EU?", "expected_answer": "Customers in the European Union can choose the Frankfurt region so their data stays in the EU.", "source_doc": "security.md", "answerable": true}
+{"id": "q04", "question": "Do you have a SOC 2 report?", "expected_answer": "Brightwave holds a SOC 2 Type II report, which is renewed every year.", "source_doc": "security.md", "answerable": true}
+{"id": "q05", "question": "Is single sign-on included in the Team plan?", "expected_answer": "No. Single sign-on with SAML 2.0 is available on the Enterprise plan only.", "source_doc": "security.md", "answerable": true}
+{"id": "q06", "question": "How long does onboarding usually take?", "expected_answer": "A typical rollout takes two to four weeks.", "source_doc": "onboarding.md", "answerable": true}
+{"id": "q07", "question": "What support response time do Enterprise customers get?", "expected_answer": "Enterprise customers get a reply within 1 hour at any time, day or night.", "source_doc": "support.md", "answerable": true}
+{"id": "q08", "question": "Which CRM systems do you integrate with?", "expected_answer": "Brightwave connects to Salesforce and HubSpot out of the box.", "source_doc": "integrations.md", "answerable": true}
+{"id": "q09", "question": "How many API requests per minute are allowed?", "expected_answer": "The API allows 1,000 requests per minute per customer.", "source_doc": "integrations.md", "answerable": true}
+{"id": "q10", "question": "Do you offer a discount for annual billing?", "expected_answer": "Annual billing gives a 15 percent discount on every plan.", "source_doc": "pricing.md", "answerable": true}
+{"id": "q11", "question": "Can Brightwave be installed on our own servers?", "expected_answer": null, "source_doc": null, "answerable": false}
+{"id": "q12", "question": "Do you have a mobile app for iPhone?", "expected_answer": null, "source_doc": null, "answerable": false}
+{"id": "q13", "question": "What is the minimum contract length for the Enterprise plan?", "expected_answer": null, "source_doc": null, "answerable": false}
+{"id": "q14", "question": "Who are your biggest competitors?", "expected_answer": null, "source_doc": null, "answerable": false}

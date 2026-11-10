@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Tailwind only scans the project it is built in; the shared packages hold classes too. */
+@source "../../../packages/ui/src";
+@source "../../../packages/live/src";

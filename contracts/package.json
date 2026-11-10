@@ -1,0 +1,20 @@
+{
+  "name": "@ember/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generated contracts between the Ember backend and its clients (desktop, web). Do not edit ts/ by hand.",
+  "type": "module",
+  "main": "ts/index.ts",
+  "types": "ts/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "16.0.0",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

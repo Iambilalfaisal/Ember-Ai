@@ -240,3 +240,24 @@ contain no business logic. Services never import FastAPI.
 - `uv run poe check` passes locally and in CI.
 - New settings are in `.env.example`; new decisions have an ADR.
 - No secrets, no personal data in logs, no business thresholds in code.
+
+---
+
+## 13. Frontend rules
+
+The frontend is built to `docs/frontend-plan.md` and looks, moves and speaks as defined in
+`docs/ui-design-prompt.md`. Read both before starting a frontend task, and follow section 9 of the
+design prompt for every screen.
+
+- One branch and one pull request per frontend task (FE0 to FE9).
+- Routes in `app/` contain no logic: they render a screen from a feature.
+- Features import other features only via their `index.ts`.
+- Components never import from `packages/api/src/mock`. Data comes only from `@ember/api` hooks.
+- All colours, radii, shadows, spacing and motion come from `@ember/ui` tokens. No raw hex values
+  in feature code.
+- Every screen has loading (skeleton), empty and error states.
+- Every interactive element is keyboard reachable with a visible focus style.
+- All motion respects `prefers-reduced-motion`.
+- User-facing text follows the writing rules in `docs/ui-design-prompt.md`.
+- A frontend task is finished when its "Done when" items are true and `pnpm check` passes,
+  locally and in CI.

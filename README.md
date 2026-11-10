@@ -17,7 +17,9 @@ uv run poe api                   # run the HTTP API (port 8000)
 uv run poe realtime              # run the live-call WebSocket service (port 8001)
 uv run poe worker                # run the background worker (needs Redis from `poe dev`)
 uv run poe scheduler             # run periodic (cron) jobs, once any exist
-uv run poe check                 # lint, types, import rules, tests, OpenAPI drift
+uv run poe openapi               # regenerate contracts/ (OpenAPI, TypeScript client, realtime types; needs Node 20+)
+uv run poe eval                  # run the evaluation harness, write a report to eval/reports/ (see eval/README.md)
+uv run poe check                 # lint, types, import rules, tests, contracts drift
 uv run poe                       # list all tasks
 EMBER_RUN_LIVE_TESTS=1 uv run pytest -m live   # real OpenAI smoke test (needs EMBER_AI__OPENAI_API_KEY; costs cents)
 ```
