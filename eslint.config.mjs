@@ -5,6 +5,7 @@ import { architectureConfig } from "./eslint.architecture.mjs";
 
 export default defineConfig([
   globalIgnores([
+    "web/public/mockServiceWorker.js",
     "**/node_modules/**",
     "**/.next/**",
     "**/coverage/**",
