@@ -1,10 +1,5 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { TeamScreen } from "@/features/team-view";
 
 export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Team view"
-      description="This is where stalled and unassigned opportunities will appear, with owners you can assign."
-    />
-  );
+  return <TeamScreen />;
 }
