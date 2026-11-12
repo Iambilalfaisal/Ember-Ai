@@ -166,8 +166,12 @@ export type Row<K extends keyof Models> = Db[K] extends { getAll: () => (infer R
 
 export const db: Db = factory(models);
 
+/** Notification ids each user has read. Held outside the models because the store has no set type. */
+export const readNotifications = new Map<string, Set<string>>();
+
 /** Empties every model. The seed runs again after this to restore the demo. */
 export function clearDb(): void {
+  readNotifications.clear();
   drop(db);
 }
 

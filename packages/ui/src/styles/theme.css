@@ -14,6 +14,9 @@
   --color-transparent: transparent;
   --color-current: currentColor;
 
+  /* The 4 px grid of the design system. Tailwind's default is 0.25rem, which is 3.5 px at a 14 px root. */
+  --spacing: 4px;
+
   --font-sans: "Schibsted Grotesk Variable", "Segoe UI", system-ui, sans-serif;
 
   --text-xs: 12px;
