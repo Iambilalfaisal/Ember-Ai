@@ -54,6 +54,8 @@ test("a rep who opens Team view directly is sent home and told why", async ({ pa
 });
 
 test("every route is reachable from the navigation or the command palette", async ({ page }) => {
+  // Many pages compile on first visit in the dev server.
+  test.setTimeout(90_000);
   await signInAs(page, "Alex Morgan");
 
   // The rail.
