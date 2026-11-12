@@ -19,3 +19,12 @@ export function money(value: number): string {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+export function dateTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}

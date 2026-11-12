@@ -376,3 +376,40 @@ describe("notifications", () => {
     expect((await api.notifications.list()).unread).toBe(3);
   });
 });
+
+describe("the live call script", () => {
+  it("plays the Blue Harbor scenario in order, with every kind of card", async () => {
+    as("sam");
+    const events = await api.calls.scenario("call-blue-harbor-live");
+
+    expect(events[0]?.type).toBe("session.ready");
+    expect(events.map((e) => e.at)).toEqual([...events.map((e) => e.at)].sort((a, b) => a - b));
+    const types = new Set(events.map((e) => e.type));
+    for (const type of [
+      "transcript.partial",
+      "transcript.final",
+      "card.start",
+      "card.delta",
+      "card.end",
+      "card.not_confirmed",
+      "card.objection",
+      "alert.contradiction",
+      "suggestion.next_question",
+    ]) {
+      expect(types.has(type as never), type).toBe(true);
+    }
+    // The first answer streams in token by token and comes out as the full sentence.
+    const answer = events
+      .filter((e) => e.type === "card.delta" && e.cardId === "card-integration")
+      .map((e) => (e.type === "card.delta" ? e.text : ""))
+      .join("");
+    expect(answer).toBe(
+      "Integration runs in three phases over six to eight weeks, with the ERP connector first.",
+    );
+  });
+
+  it("has no script for a call that is not scripted", async () => {
+    as("sam");
+    expect((await failure(api.calls.scenario("call-solvex-qa"))).status).toBe(404);
+  });
+});

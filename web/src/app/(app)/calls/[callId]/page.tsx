@@ -1,10 +1,6 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { CallDetailScreen } from "@/features/calls";
 
-export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Call detail"
-      description="This is where a call's transcript, answers and summary will appear."
-    />
-  );
+export default async function Page({ params }: { params: Promise<{ callId: string }> }) {
+  const { callId } = await params;
+  return <CallDetailScreen callId={callId} />;
 }

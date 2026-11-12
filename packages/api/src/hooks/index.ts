@@ -42,6 +42,8 @@ export const useCall = (id: string) =>
   useQuery({ queryKey: keys.call(id), queryFn: () => api.calls.get(id) });
 export const useBrief = (id: string) =>
   useQuery({ queryKey: keys.brief(id), queryFn: () => api.calls.brief(id) });
+export const useScenario = (id: string) =>
+  useQuery({ queryKey: keys.scenario(id), queryFn: () => api.calls.scenario(id), retry: false });
 export const useSummary = (id: string) =>
   useQuery({ queryKey: keys.summary(id), queryFn: () => api.calls.summary(id) });
 

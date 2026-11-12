@@ -13,6 +13,7 @@ import {
   DiscoveryNotes,
   Draft,
   KnowledgeAnswer,
+  LiveEvent,
   KnowledgeDocument,
   MyDay,
   NotificationList,
@@ -97,6 +98,7 @@ export const api = {
     brief: (id: string) => request(`/calls/${id}/brief`, { schema: CallBrief }),
     end: (id: string, body: EndCallBody = {}) =>
       request(`/calls/${id}/end`, { method: "POST", body, schema: CallSummary }),
+    scenario: (id: string) => request(`/calls/${id}/scenario`, { schema: z.array(LiveEvent) }),
     summary: (id: string) => request(`/calls/${id}/summary`, { schema: CallSummary }),
     updateSummary: (id: string, body: UpdateSummaryBody) =>
       request(`/calls/${id}/summary`, { method: "PATCH", body, schema: CallSummary }),

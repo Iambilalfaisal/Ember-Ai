@@ -7,6 +7,7 @@ import {
   CallSummary,
   CardFeedbackBody,
   EndCallBody,
+  LiveEvent,
   UpdateSummaryBody,
 } from "../../domain";
 import { addDays } from "date-fns";
@@ -15,6 +16,7 @@ import { db, nextId } from "../db";
 import { addInteraction, assertCanSeeDeal, getCall, getDeal, markDealAttended } from "../logic";
 import { json, toBrief, toCall, toCard, toDraft, toSegment, toSummary, toTask } from "../mappers";
 import { composeDraft } from "../seed/drafts";
+import { scenarioFor } from "../seed/scenarios";
 import { draftSummaryFor } from "../seed/summaries";
 import { ApiError, notFound, route } from "./shared";
 
@@ -82,6 +84,15 @@ export const callHandlers = [
       const brief =
         db.brief.findFirst({ where: { callId: { equals: call.id } } }) ?? notFound("The brief");
       return CallBrief.parse(toBrief(brief));
+    },
+  }),
+
+  // The scripted live events for a call, when it has a scenario to play.
+  route("get", "/calls/:id/scenario", {
+    run: ({ user, params }) => {
+      const call = visibleCall(user, params["id"] ?? "");
+      const events = scenarioFor(call.scenarioId) ?? notFound("A scripted scenario for this call");
+      return z.array(LiveEvent).parse(events);
     },
   }),
 
