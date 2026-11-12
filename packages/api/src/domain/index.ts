@@ -7,3 +7,4 @@ export * from "./reports";
 export * from "./settings";
 export * from "./live";
 export * from "./requests";
+export * from "./notifications";

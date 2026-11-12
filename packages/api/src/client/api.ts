@@ -15,6 +15,7 @@ import {
   KnowledgeAnswer,
   KnowledgeDocument,
   MyDay,
+  NotificationList,
   PilotReport,
   RevivalQueue,
   Scorecard,
@@ -128,6 +129,10 @@ export const api = {
     ask: (question: string) =>
       request("/knowledge/ask", { method: "POST", body: { question }, schema: KnowledgeAnswer }),
     scorecard: () => request("/knowledge/scorecard", { schema: Scorecard }),
+  },
+  notifications: {
+    list: () => request("/notifications", { schema: NotificationList }),
+    markAllRead: () => request("/notifications/read", { method: "POST", schema: ok }),
   },
   reports: {
     pilot: () => request("/reports/pilot", { schema: PilotReport }),

@@ -6,6 +6,7 @@
   "description": "Domain schemas, typed client, Query hooks and the mock backend (FE2). The schemas are the draft API contract.",
   "exports": {
     ".": "./src/index.ts",
+    "./mock": "./src/mock/index.ts",
     "./mock/node": "./src/mock/node.ts"
   },
   "scripts": {

@@ -343,3 +343,36 @@ describe("settings", () => {
     expect(settings.followUpDays.discovery).toBe(5);
   });
 });
+
+describe("notifications", () => {
+  const titles = async () => (await api.notifications.list()).items.map((n) => n.title);
+
+  it("gives each role what it needs to act on", async () => {
+    // The time shown is the viewer's local time, so the test matches the shape, not the hour.
+    const mine = await titles();
+    expect(mine[0]).toMatch(/^Blue Harbor Logistics is today at \d\d:\d\d$/);
+    expect(mine[1]).toMatch(/^Solvex Manufacturing is today at \d\d:\d\d$/);
+    expect(mine[2]).toBe("4 opportunities need you");
+    as("priya");
+    expect(await titles()).toContain("Nimbus Freight has no owner");
+    expect(await titles()).toContain("Last week's pilot report is ready");
+    as("alex");
+    expect(await titles()).toContain("Two versions of the Pricing guide are active");
+  });
+
+  it("marks everything read, and an admin fix clears the pricing notice", async () => {
+    expect((await api.notifications.list()).unread).toBe(3);
+    await api.notifications.markAllRead();
+    expect((await api.notifications.list()).unread).toBe(0);
+
+    as("alex");
+    await api.knowledge.deactivate("doc-pricing-v4");
+    expect(await titles()).not.toContain("Two versions of the Pricing guide are active");
+  });
+
+  it("starts unread again after a reset", async () => {
+    await api.notifications.markAllRead();
+    await api.session.reset();
+    expect((await api.notifications.list()).unread).toBe(3);
+  });
+});

@@ -5,4 +5,6 @@ export * from "./domain";
 export { api, configureApi, ApiError } from "./client";
 export * from "./hooks";
 export { ApiProvider } from "./provider/ApiProvider";
+export { ApiClientProvider } from "./provider/ApiClientProvider";
+export { setDemoLatency, isDemoMode } from "./demo";
 export { API_MODES, getApiMode, getApiBaseUrl, type ApiMode } from "./mode";

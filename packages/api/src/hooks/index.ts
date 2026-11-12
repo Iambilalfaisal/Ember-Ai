@@ -50,6 +50,8 @@ export const useDocuments = () =>
 export const useScorecard = () =>
   useQuery({ queryKey: keys.scorecard, queryFn: api.knowledge.scorecard });
 export const usePilotReport = () => useQuery({ queryKey: keys.pilot, queryFn: api.reports.pilot });
+export const useNotifications = () =>
+  useQuery({ queryKey: keys.notifications, queryFn: api.notifications.list });
 export const useSettings = () => useQuery({ queryKey: keys.settings, queryFn: api.settings.get });
 
 // Writes ----------------------------------------------------------------------------------------
@@ -106,4 +108,5 @@ export const useActivateDocument = () => useWrite((id: string) => api.knowledge.
 
 export const useUpdateSettings = () =>
   useWrite((body: UpdateSettingsBody) => api.settings.update(body));
+export const useMarkNotificationsRead = () => useWrite(() => api.notifications.markAllRead());
 export const useResetDemo = () => useWrite(() => api.session.reset());

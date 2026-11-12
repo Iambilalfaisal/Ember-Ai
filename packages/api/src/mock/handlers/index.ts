@@ -3,6 +3,7 @@ import { dealHandlers } from "./deals";
 import { draftHandlers } from "./drafts";
 import { knowledgeHandlers } from "./knowledge";
 import { myDayHandlers } from "./myday";
+import { notificationHandlers } from "./notifications";
 import { reportHandlers } from "./reports";
 import { sessionHandlers } from "./session";
 import { teamHandlers } from "./team";
@@ -16,6 +17,7 @@ export const handlers = [
   ...callHandlers,
   ...knowledgeHandlers,
   ...reportHandlers,
+  ...notificationHandlers,
 ];
 
 export { answerQuestion, HOLDING_LINE } from "./knowledge";

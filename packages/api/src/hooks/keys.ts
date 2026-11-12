@@ -18,4 +18,5 @@ export const keys = {
   scorecard: ["scorecard"] as const,
   pilot: ["pilot"] as const,
   settings: ["settings"] as const,
+  notifications: ["notifications"] as const,
 };
