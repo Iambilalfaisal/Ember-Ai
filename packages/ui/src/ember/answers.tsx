@@ -84,14 +84,17 @@ export function AnswerCard({
   answer,
   source,
   streaming = false,
+  ignite = streaming,
   feedback: controlled,
   onFeedback,
   className,
 }: {
   answer: string;
-  source: Source;
+  source?: Source | undefined;
   /** True when the card has just arrived: the edge ignites and the text streams in. */
   streaming?: boolean;
+  /** Ignite the edge without streaming the text, for text that is already arriving piece by piece. */
+  ignite?: boolean;
   feedback?: Feedback | null;
   onFeedback?: (feedback: Feedback) => void;
   className?: string;
@@ -104,12 +107,12 @@ export function AnswerCard({
   };
 
   return (
-    <Card edge="glow" ignite={streaming} label="Answer" className={className}>
+    <Card edge="glow" ignite={ignite} label="Answer" className={className}>
       <p className="max-w-[60ch] text-lg font-medium leading-[1.45] text-coal">
         <StreamedText key={answer} text={answer} enabled={streaming} />
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <SourceChip source={source} />
+        {source ? <SourceChip source={source} /> : null}
         <div className="flex items-center gap-1" role="group" aria-label="Was this answer right?">
           {feedback ? (
             <p role="status" className="flex items-center gap-1.5 text-detail text-coal">

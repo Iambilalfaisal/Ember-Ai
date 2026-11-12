@@ -1,10 +1,6 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { LiveCallScreen } from "@/features/calls";
 
-export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Live call"
-      description="This is where the call stage and the Ember panel will appear."
-    />
-  );
+export default async function Page({ params }: { params: Promise<{ callId: string }> }) {
+  const { callId } = await params;
+  return <LiveCallScreen callId={callId} />;
 }

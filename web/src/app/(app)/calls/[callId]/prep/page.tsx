@@ -1,10 +1,6 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { BriefScreen } from "@/features/calls";
 
-export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Call brief"
-      description="This is where the account summary, open questions and call plan will appear."
-    />
-  );
+export default async function Page({ params }: { params: Promise<{ callId: string }> }) {
+  const { callId } = await params;
+  return <BriefScreen callId={callId} />;
 }

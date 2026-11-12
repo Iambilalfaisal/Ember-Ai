@@ -13,6 +13,7 @@ export const keys = {
   calls: (filters?: object) => ["calls", filters ?? {}] as const,
   call: (id: string) => ["call", id] as const,
   brief: (id: string) => ["brief", id] as const,
+  scenario: (id: string) => ["scenario", id] as const,
   summary: (id: string) => ["summary", id] as const,
   documents: ["documents"] as const,
   scorecard: ["scorecard"] as const,

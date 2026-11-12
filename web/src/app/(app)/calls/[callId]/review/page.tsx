@@ -1,10 +1,6 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { ReviewScreen } from "@/features/calls";
 
-export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Summary review"
-      description="This is where you will check and approve a call summary."
-    />
-  );
+export default async function Page({ params }: { params: Promise<{ callId: string }> }) {
+  const { callId } = await params;
+  return <ReviewScreen callId={callId} />;
 }
