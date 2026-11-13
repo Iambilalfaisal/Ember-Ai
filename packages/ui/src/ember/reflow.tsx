@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { spring } from "../motion";
 
@@ -37,5 +37,39 @@ export function ReflowItem({ children, className }: { children: ReactNode; class
     >
       {children}
     </motion.li>
+  );
+}
+
+/** Wraps a board whose tiles move between containers: reduced motion turns the movement off. */
+export function SpringBoard({ children }: { children: ReactNode }) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <LayoutGroup>{children}</LayoutGroup>
+    </MotionConfig>
+  );
+}
+
+/** A tile that glides to its new place when it changes container. Give it a stable `id`. */
+export function SpringTile({
+  id,
+  children,
+  className,
+  dimmed = false,
+}: {
+  id: string;
+  children: ReactNode;
+  className?: string;
+  /** Used while the tile is being dragged: the real tile stays behind, faded. */
+  dimmed?: boolean;
+}) {
+  return (
+    <motion.div
+      layoutId={id}
+      transition={spring}
+      animate={{ opacity: dimmed ? 0.4 : 1 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
 }
