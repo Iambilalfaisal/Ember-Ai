@@ -1,10 +1,5 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { ReportsScreen } from "@/features/reports";
 
 export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Reports"
-      description="This is where pilot metrics will appear as trends by week."
-    />
-  );
+  return <ReportsScreen />;
 }

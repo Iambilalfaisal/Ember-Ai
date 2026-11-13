@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { SettingsScreen } from "@/features/settings";
 import { SETTINGS_SECTIONS } from "@/lib/routes";
 
 export default async function SettingsSection({
@@ -10,10 +10,5 @@ export default async function SettingsSection({
   const { section } = await params;
   const found = SETTINGS_SECTIONS.find((s) => s.slug === section);
   if (!found) notFound();
-  return (
-    <RoutePlaceholder
-      title={found.label}
-      description="This is where you will review and change these settings."
-    />
-  );
+  return <SettingsScreen slug={found.slug} />;
 }
