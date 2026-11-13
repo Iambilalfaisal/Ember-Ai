@@ -1,10 +1,5 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { PipelineScreen } from "@/features/pipeline";
 
 export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Pipeline"
-      description="This is where opportunities will appear by stage, ready to move between stages."
-    />
-  );
+  return <PipelineScreen />;
 }

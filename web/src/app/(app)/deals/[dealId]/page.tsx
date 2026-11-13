@@ -1,10 +1,6 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { DealDetailScreen } from "@/features/deals";
 
-export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Opportunity"
-      description="This is where an opportunity's timeline, contacts and next steps will appear."
-    />
-  );
+export default async function Page({ params }: { params: Promise<{ dealId: string }> }) {
+  const { dealId } = await params;
+  return <DealDetailScreen dealId={dealId} />;
 }
