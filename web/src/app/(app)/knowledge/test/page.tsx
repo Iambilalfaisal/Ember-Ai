@@ -1,10 +1,5 @@
-import { RoutePlaceholder } from "@/components/RoutePlaceholder";
+import { TestConsoleScreen } from "@/features/knowledge";
 
 export default function Page() {
-  return (
-    <RoutePlaceholder
-      title="Test console"
-      description="This is where you will ask the knowledge base a question and see its source."
-    />
-  );
+  return <TestConsoleScreen />;
 }
