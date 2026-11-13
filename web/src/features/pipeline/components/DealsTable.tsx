@@ -6,8 +6,8 @@ import { STAGE_LABEL } from "@/lib/stages";
 
 export function DealsTable({ deals, owners }: { deals: Deal[]; owners: Map<string, User> }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[52rem] border-collapse text-left text-sm">
+    <div className="ember-table-card">
+      <table className="ember-table w-full min-w-[52rem] border-collapse text-left text-sm">
         <caption className="sr-only">Opportunities</caption>
         <thead>
           <tr className="border-b border-cinder text-detail text-smoke">

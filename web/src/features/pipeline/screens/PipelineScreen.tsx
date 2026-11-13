@@ -10,7 +10,7 @@ import { DealsTable } from "../components/DealsTable";
 import { PipelineBoard } from "../components/PipelineBoard";
 
 const selectClass =
-  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-coal";
+  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-iris focus-visible:border-iris";
 
 // A rep only ever sees their own deals, so owner initials on every tile would add nothing.
 const noOwners = new Map<string, User>();

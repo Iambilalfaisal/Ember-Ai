@@ -14,7 +14,7 @@ export function TasksScreen() {
   );
 
   return (
-    <div className="max-w-4xl space-y-4">
+    <div className="space-y-4">
       <Segmented
         label="Show tasks"
         value={filter}

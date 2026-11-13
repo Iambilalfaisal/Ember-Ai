@@ -32,10 +32,10 @@ export function KnowledgeScreen() {
   const documents = (data ?? []).filter((doc) => filter === "all" || doc.status === filter);
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="space-y-6">
       <KnowledgeNav />
       {me && me.role !== "rep" ? <ScorecardPanel /> : null}
-      <section aria-labelledby="documents-heading" className="space-y-3">
+      <section aria-labelledby="documents-heading" className="space-y-3" data-tour="knowledge-docs">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="documents-heading" className="text-lg font-medium text-coal">
             Documents

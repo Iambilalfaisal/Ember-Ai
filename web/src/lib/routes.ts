@@ -30,8 +30,14 @@ export const HOME: Record<Role, string> = {
 const EVERYONE: Role[] = ["rep", "lead", "admin"];
 const LEADS: Role[] = ["lead", "admin"];
 
+export type NavGroup = "Workspace" | "Sales" | "Insights" | "Manage";
+
+/** The rail's sections, in order. */
+export const NAV_GROUPS: NavGroup[] = ["Workspace", "Sales", "Insights", "Manage"];
+
 export type NavItem = {
   href: string;
+  group: NavGroup;
   label: string;
   icon: LucideIcon;
   roles: Role[];
@@ -43,6 +49,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   {
     href: "/my-day",
+    group: "Workspace",
     label: "My Day",
     icon: Inbox,
     roles: EVERYONE,
@@ -50,6 +57,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/calls",
+    group: "Workspace",
     label: "Calls",
     icon: Phone,
     roles: EVERYONE,
@@ -57,6 +65,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/tasks",
+    group: "Workspace",
     label: "Tasks",
     icon: ListChecks,
     roles: EVERYONE,
@@ -64,6 +73,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/pipeline",
+    group: "Sales",
     label: "Pipeline",
     icon: Columns3,
     roles: EVERYONE,
@@ -71,6 +81,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/contacts",
+    group: "Sales",
     label: "Contacts",
     icon: Contact,
     roles: EVERYONE,
@@ -78,6 +89,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/team",
+    group: "Sales",
     label: "Team view",
     icon: Users,
     roles: LEADS,
@@ -85,6 +97,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/revival",
+    group: "Sales",
     label: "Revival queue",
     icon: RotateCcw,
     roles: EVERYONE,
@@ -92,6 +105,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/knowledge",
+    group: "Insights",
     label: "Knowledge base",
     icon: BookOpen,
     roles: EVERYONE,
@@ -99,6 +113,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/reports",
+    group: "Insights",
     label: "Reports",
     icon: ChartNoAxesColumn,
     roles: LEADS,
@@ -106,6 +121,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: "/settings",
+    group: "Manage",
     label: "Settings",
     icon: Settings,
     roles: LEADS,
@@ -122,6 +138,11 @@ export const SETTINGS_SECTIONS = [
 ] as const;
 
 export const navFor = (role: Role): NavItem[] => NAV_ITEMS.filter((i) => i.roles.includes(role));
+
+/** The section a page belongs to, shown above the page title. */
+export function groupFor(pathname: string): NavGroup | undefined {
+  return navItemFor(pathname)?.group;
+}
 
 // Pages that are not in the rail. Order matters: the first pattern that matches wins.
 const OTHER_PAGES: { pattern: RegExp; title: string; roles: Role[] }[] = [

@@ -33,7 +33,7 @@ export function ReviewScreen({ callId }: { callId: string }) {
 
   if (isPending) {
     return (
-      <div className="max-w-3xl space-y-4" aria-busy="true">
+      <div className="space-y-4" aria-busy="true">
         <Skeleton className="h-6 w-64" />
         <Skeleton className="h-4 w-80" />
         <Skeleton className="h-52 w-full" />
@@ -82,7 +82,7 @@ export function ReviewScreen({ callId }: { callId: string }) {
     });
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6" data-tour="review">
       <CallHeader call={call} />
       <div className="flex items-center gap-3">
         <h2 className="text-base font-semibold text-coal">

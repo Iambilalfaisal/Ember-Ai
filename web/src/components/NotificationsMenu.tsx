@@ -25,7 +25,7 @@ export function NotificationsMenu() {
           >
             <Bell aria-hidden="true" className="size-[18px]" />
             {unread > 0 ? (
-              <span className="min-w-5 rounded-pill bg-coal px-1.5 text-center text-xs leading-5 tabular-nums text-paper">
+              <span className="min-w-5 rounded-pill bg-iris px-1.5 text-center text-xs leading-5 tabular-nums text-iris-fg">
                 {unread}
               </span>
             ) : null}
@@ -55,13 +55,13 @@ export function NotificationsMenu() {
                 <Link
                   href={n.href}
                   onClick={() => setOpen(false)}
-                  className="flex gap-3 px-4 py-3 transition-instant hover:bg-ash"
+                  className="flex gap-3 px-4 py-3 transition-instant hover:bg-iris-wash"
                 >
                   <span
                     aria-hidden="true"
                     className={cn(
                       "mt-1.5 size-2 shrink-0 rounded-pill",
-                      n.read ? "bg-transparent" : "bg-coal",
+                      n.read ? "bg-transparent" : "bg-iris",
                     )}
                   />
                   <span className="min-w-0 flex-1">

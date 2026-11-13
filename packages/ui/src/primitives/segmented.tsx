@@ -27,13 +27,13 @@ export function Segmented<T extends string>({
       onValueChange={(next) => {
         if (next) onValueChange(next as T);
       }}
-      className={cn("inline-flex rounded-control border border-cinder bg-paper p-0.5", className)}
+      className={cn("inline-flex rounded-control border border-cinder bg-ash p-0.5", className)}
     >
       {options.map((option) => (
         <ToggleGroup.Item
           key={option.value}
           value={option.value}
-          className="h-7 rounded-[4px] px-3 text-detail font-medium text-smoke transition-instant hover:text-coal data-[state=on]:bg-coal data-[state=on]:text-paper"
+          className="h-7 rounded-[6px] px-3 text-detail font-medium text-smoke transition-instant hover:text-iris-ink data-[state=on]:bg-iris data-[state=on]:text-iris-fg data-[state=on]:shadow-card"
         >
           {option.label}
         </ToggleGroup.Item>

@@ -23,7 +23,7 @@ export function ReportsScreen() {
 
   if (isPending) {
     return (
-      <div className="max-w-6xl space-y-6" aria-busy="true">
+      <div className="space-y-6" aria-busy="true">
         <div className="grid grid-cols-5 gap-6">
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-20" />
@@ -73,7 +73,7 @@ export function ReportsScreen() {
   const overdueFirst = first.overdueByRep.reduce((sum, rep) => sum + rep.overdue, 0);
 
   return (
-    <div className="max-w-6xl space-y-8">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-lg font-medium text-coal">Pilot metrics</h2>
@@ -92,7 +92,11 @@ export function ReportsScreen() {
         />
       </div>
 
-      <section aria-label="Latest week" className="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-5">
+      <section
+        data-tour="report-metrics"
+        aria-label="Latest week"
+        className="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-5"
+      >
         <MetricTile
           label="Answers used"
           value={count(latest.answersUsed)}

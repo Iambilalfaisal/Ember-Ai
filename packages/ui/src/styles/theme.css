@@ -11,6 +11,16 @@
   --color-frost: var(--ember-frost);
   --color-moss: var(--ember-moss);
   --color-flare: var(--ember-flare);
+  --color-iris: var(--ember-iris);
+  --color-iris-fg: var(--ember-iris-fg);
+  --color-iris-ink: var(--ember-iris-ink);
+  --color-iris-wash: var(--ember-iris-wash);
+  --color-nav: var(--ember-nav);
+  --color-nav-ink: var(--ember-nav-ink);
+  --color-nav-muted: var(--ember-nav-muted);
+  --color-nav-accent: var(--ember-nav-accent);
+  --color-nav-hover: var(--ember-nav-hover);
+  --color-nav-active: var(--ember-nav-active);
   --color-transparent: transparent;
   --color-current: currentColor;
 
@@ -37,13 +47,29 @@
   --text-3xl--line-height: 1.25;
 
   --radius-*: initial;
-  --radius-control: 6px;
-  --radius-panel: 10px;
-  --radius-sheet: 16px;
+  --radius-control: 8px;
+  --radius-panel: 14px;
+  --radius-sheet: 20px;
   --radius-pill: 9999px;
 
   --shadow-*: initial;
   --shadow-float: var(--ember-shadow-float);
+  --shadow-card: var(--ember-shadow-card);
+  --shadow-lift: var(--ember-shadow-lift);
+}
+
+/* Gradients come from tokens so both themes stay in step: bg-brand, bg-nav-rail, bg-hero, bg-page-glow. */
+@utility bg-brand {
+  background-image: var(--ember-gradient-brand);
+}
+@utility bg-nav-rail {
+  background-image: var(--ember-gradient-nav);
+}
+@utility bg-hero {
+  background-image: var(--ember-gradient-hero);
+}
+@utility bg-page-glow {
+  background-image: var(--ember-gradient-page);
 }
 
 /* Motion tokens (section 3). Springs live in motion.ts because CSS cannot express them. */

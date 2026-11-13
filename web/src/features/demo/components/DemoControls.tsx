@@ -39,7 +39,7 @@ export function DemoControls() {
             type="button"
             aria-label="Demo controls"
             className={cn(
-              "flex h-9 w-full items-center gap-3 rounded-control px-2.5 text-sm text-smoke transition-instant hover:bg-coal/8 hover:text-coal",
+              "flex h-9 w-full items-center gap-3 rounded-control px-2.5 text-sm text-nav-muted transition-instant hover:bg-nav-hover hover:text-nav-ink",
               collapsed && "justify-center px-0",
             )}
           >

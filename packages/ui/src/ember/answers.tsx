@@ -22,9 +22,9 @@ export function SourceChip({ source }: { source: Source }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-6 max-w-full items-center gap-1.5 rounded-pill border border-cinder bg-paper px-2.5 text-detail text-coal transition-instant hover:border-smoke"
+          className="inline-flex h-6 max-w-full items-center gap-1.5 rounded-pill border border-transparent bg-iris-wash px-2.5 text-detail text-iris-ink transition-instant hover:border-iris"
         >
-          <FileText aria-hidden="true" className="size-3.5 shrink-0 text-smoke" />
+          <FileText aria-hidden="true" className="size-3.5 shrink-0 text-iris-ink" />
           <span className="truncate">
             {source.title} {source.version}, {source.section}
           </span>
@@ -60,7 +60,7 @@ function Card({
     <article
       aria-label={label}
       className={cn(
-        "relative overflow-hidden rounded-panel border border-cinder bg-paper py-4 pl-5 pr-4",
+        "relative overflow-hidden rounded-panel border border-cinder bg-paper py-4 pl-5 pr-4 shadow-card",
         className,
       )}
     >

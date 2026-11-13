@@ -162,7 +162,7 @@ test("the guided tour opens from the demo controls and moves the demo along", as
   await page.getByRole("button", { name: "Start the guided tour" }).click();
 
   const tour = page.getByRole("complementary", { name: "Guided tour" });
-  await expect(tour).toContainText("Step 1 of 10");
+  await expect(tour).toContainText("Step 1 of 8");
   await tour.getByRole("button", { name: "Next" }).click();
   await tour.getByRole("button", { name: "Next" }).click();
   await expect(page).toHaveURL(/\/calls\/call-blue-harbor-live\/prep$/);

@@ -15,6 +15,11 @@
     color: var(--ember-coal);
   }
 
+  /* Rail and banner surfaces are dark in both themes, so focus must stay visible on them. */
+  [data-surface="nav"] :focus-visible {
+    outline-color: var(--ember-nav-accent);
+  }
+
   h1,
   h2,
   h3,
@@ -24,9 +29,9 @@
     line-height: 1.25;
   }
 
-  /* One focus style for everything: a 2 px coal outline with a 2 px offset. */
+  /* One focus style for everything: a 2 px iris outline with a 2 px offset. */
   :focus-visible {
-    outline: 2px solid var(--ember-coal);
+    outline: 2px solid var(--ember-iris);
     outline-offset: 2px;
   }
 
@@ -35,7 +40,45 @@
   }
 
   ::selection {
-    background-color: var(--ember-glow);
-    color: #1e2430;
+    background-color: var(--ember-iris);
+    color: var(--ember-iris-fg);
+  }
+}
+
+/* Tables sit on a card: add class "ember-table" to the table and "ember-table-card" to its wrapper. */
+@layer components {
+  .ember-table-card {
+    overflow-x: auto;
+    border: 1px solid var(--ember-cinder);
+    border-radius: var(--radius-panel);
+    background-color: var(--ember-paper);
+    box-shadow: var(--ember-shadow-card);
+  }
+
+  .ember-table th,
+  .ember-table td {
+    padding-left: 16px;
+  }
+
+  .ember-table th:last-child,
+  .ember-table td:last-child {
+    padding-right: 16px;
+  }
+
+  .ember-table thead tr {
+    background-color: var(--ember-iris-wash);
+  }
+
+  .ember-table tbody tr {
+    border-bottom: 1px solid var(--ember-cinder);
+    transition: background-color 120ms ease-out;
+  }
+
+  .ember-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .ember-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--ember-iris-wash) 50%, transparent);
   }
 }

@@ -1,51 +1,104 @@
 /*
- * Ember design tokens (docs/ui-design-prompt.md section 3).
+ * Ember design tokens (docs/ui-redesign.md). Deep indigo and violet, with amber kept for warmth.
  * Light is the default. Dark applies for data-theme="dark", or for the system setting unless
  * data-theme="light" is set. Keep the values in step with ../tokens.ts (a test checks it).
  */
 :root {
-  --ember-ash: #eef0f2;
+  --ember-ash: #f4f4fb;
   --ember-paper: #ffffff;
-  --ember-coal: #1e2430;
-  --ember-smoke: #5e6776;
-  --ember-cinder: #d8dce2;
+  --ember-coal: #15172e;
+  --ember-smoke: #555a7a;
+  --ember-cinder: #e0e2f0;
   --ember-glow: #e9a23b;
   --ember-glow-ink: #8f560c;
-  --ember-frost: #6f8fb8;
-  --ember-moss: #3e8e6e;
-  --ember-flare: #c9443a;
-  --ember-shadow-float: 0 12px 32px -12px rgb(30 36 48 / 0.28);
+  --ember-frost: #5f7fcb;
+  --ember-moss: #2e8f68;
+  --ember-flare: #c93a52;
+  --ember-iris: #5b3fd9;
+  --ember-iris-fg: #ffffff;
+  --ember-iris-ink: #4f35c4;
+  --ember-iris-wash: #eeebfe;
+  --ember-nav: #14122f;
+  --ember-nav-ink: #edecff;
+  --ember-nav-muted: #a7a5d4;
+  --ember-nav-accent: #b3a7ff;
+  --ember-nav-hover: #ffffff14;
+  --ember-nav-active: #8b7bff33;
+  --ember-shadow-card: 0 1px 2px rgb(21 23 46 / 0.04), 0 8px 24px -12px rgb(60 40 160 / 0.14);
+  --ember-shadow-lift: 0 2px 4px rgb(21 23 46 / 0.05), 0 16px 32px -14px rgb(60 40 160 / 0.26);
+  --ember-shadow-float: 0 16px 40px -12px rgb(30 20 90 / 0.34);
+  --ember-gradient-brand: linear-gradient(135deg, #5b3fd9 0%, #7a4be8 55%, #9b5cf0 100%);
+  --ember-gradient-nav: linear-gradient(180deg, #1a1740 0%, #14122f 55%, #0f0e26 100%);
+  --ember-gradient-hero: radial-gradient(120% 140% at 0% 0%, #e6e0ff 0%, #f1eefe 38%, #f4f4fb 75%);
+  --ember-gradient-page: radial-gradient(60rem 28rem at 85% -8rem, #e4defd66, transparent 70%);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ember-ash: #171c25;
-    --ember-paper: #1f2531;
-    --ember-coal: #e8eaee;
-    --ember-smoke: #a3aab7;
-    --ember-cinder: #2e3542;
+    --ember-ash: #0d0e1f;
+    --ember-paper: #16172f;
+    --ember-coal: #ecebff;
+    --ember-smoke: #a5a8cb;
+    --ember-cinder: #2a2c52;
     --ember-glow: #f0ae4a;
     --ember-glow-ink: #f6c47a;
-    --ember-frost: #86a3c9;
-    --ember-moss: #5fb08e;
-    --ember-flare: #e2685f;
-    --ember-shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+    --ember-frost: #8fa9e6;
+    --ember-moss: #4fbf93;
+    --ember-flare: #ef6b80;
+    --ember-iris: #9585ff;
+    --ember-iris-fg: #0d0e1f;
+    --ember-iris-ink: #b4a9ff;
+    --ember-iris-wash: #25235a;
+    --ember-nav: #0f0e26;
+    --ember-nav-ink: #edecff;
+    --ember-nav-muted: #a7a5d4;
+    --ember-nav-accent: #b3a7ff;
+    --ember-nav-hover: #ffffff14;
+    --ember-nav-active: #8b7bff33;
+    --ember-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+    --ember-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.35), 0 16px 32px -14px rgb(90 70 220 / 0.35);
+    --ember-shadow-float: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+    --ember-gradient-brand: linear-gradient(135deg, #8574ff 0%, #9b7bff 55%, #b48bff 100%);
+    --ember-gradient-nav: linear-gradient(180deg, #151338 0%, #0f0e26 55%, #0b0a1e 100%);
+    --ember-gradient-hero: radial-gradient(
+      120% 140% at 0% 0%,
+      #2c2766 0%,
+      #1d1c45 40%,
+      #16172f 78%
+    );
+    --ember-gradient-page: radial-gradient(60rem 28rem at 85% -8rem, #3a2f9a40, transparent 70%);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --ember-ash: #171c25;
-  --ember-paper: #1f2531;
-  --ember-coal: #e8eaee;
-  --ember-smoke: #a3aab7;
-  --ember-cinder: #2e3542;
+  --ember-ash: #0d0e1f;
+  --ember-paper: #16172f;
+  --ember-coal: #ecebff;
+  --ember-smoke: #a5a8cb;
+  --ember-cinder: #2a2c52;
   --ember-glow: #f0ae4a;
   --ember-glow-ink: #f6c47a;
-  --ember-frost: #86a3c9;
-  --ember-moss: #5fb08e;
-  --ember-flare: #e2685f;
-  --ember-shadow-float: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --ember-frost: #8fa9e6;
+  --ember-moss: #4fbf93;
+  --ember-flare: #ef6b80;
+  --ember-iris: #9585ff;
+  --ember-iris-fg: #0d0e1f;
+  --ember-iris-ink: #b4a9ff;
+  --ember-iris-wash: #25235a;
+  --ember-nav: #0f0e26;
+  --ember-nav-ink: #edecff;
+  --ember-nav-muted: #a7a5d4;
+  --ember-nav-accent: #b3a7ff;
+  --ember-nav-hover: #ffffff14;
+  --ember-nav-active: #8b7bff33;
+  --ember-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+  --ember-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.35), 0 16px 32px -14px rgb(90 70 220 / 0.35);
+  --ember-shadow-float: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --ember-gradient-brand: linear-gradient(135deg, #8574ff 0%, #9b7bff 55%, #b48bff 100%);
+  --ember-gradient-nav: linear-gradient(180deg, #151338 0%, #0f0e26 55%, #0b0a1e 100%);
+  --ember-gradient-hero: radial-gradient(120% 140% at 0% 0%, #2c2766 0%, #1d1c45 40%, #16172f 78%);
+  --ember-gradient-page: radial-gradient(60rem 28rem at 85% -8rem, #3a2f9a40, transparent 70%);
   color-scheme: dark;
 }

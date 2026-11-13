@@ -34,8 +34,9 @@ describe("writing and style rules", () => {
     expect(text).not.toMatch(/\buppercase\b/);
   });
 
-  it.each(files)("$name: no gradients or shimmer", ({ text }) => {
-    expect(text).not.toMatch(/gradient|shimmer/);
+  // Gradients are defined once, as tokens (styles/tokens.css), and used through bg-brand and friends.
+  it.each(files)("$name: no hand-written gradients", ({ text }) => {
+    expect(text).not.toMatch(/(linear|radial|conic)-gradient\(/);
   });
 
   it.each(files)("$name: no raw hex colours", ({ text }) => {

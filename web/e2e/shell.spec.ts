@@ -10,12 +10,24 @@ async function signInAs(page: Page, name: string) {
 
 const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
 
-test("the front door sends a signed-out visitor to sign in", async ({ page }) => {
+test("the front door shows the landing page and its demo button opens sign in", async ({
+  page,
+}) => {
   await page.goto("/");
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveTitle(/Ember/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: /never lets a lead go quiet/ }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: /Try the live demo/ }).click();
   await expect(page).toHaveURL(/\/sign-in$/);
-  await expect(page).toHaveTitle("Ember");
   await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Sign in as/ })).toHaveCount(4);
+});
+
+test("a signed-out visitor who opens an app page is sent to sign in", async ({ page }) => {
+  await page.goto("/my-day");
+  await expect(page).toHaveURL(/\/sign-in$/);
 });
 
 test("signing in as a rep lands on My Day with the rep's navigation and count", async ({

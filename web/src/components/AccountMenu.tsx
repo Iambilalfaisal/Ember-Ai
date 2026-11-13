@@ -32,7 +32,7 @@ export function AccountMenu({ roleSwitcher }: { roleSwitcher?: ReactNode }) {
         <button
           type="button"
           aria-label={`Account menu for ${me.name}`}
-          className="flex h-9 items-center gap-2 rounded-control pl-1 pr-2 transition-instant hover:bg-coal/8"
+          className="flex h-9 items-center gap-2 rounded-control pl-1 pr-2 transition-instant hover:bg-iris-wash"
         >
           <Avatar initials={me.initials} />
           <span className="hidden text-left leading-tight md:block">

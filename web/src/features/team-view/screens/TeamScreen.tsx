@@ -16,7 +16,7 @@ import { shortDate } from "@/lib/format";
 import { STATUS_FILTERS, STATUS_LABEL, STATUS_TONE, type StatusFilter } from "../copy";
 
 const selectClass =
-  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-coal";
+  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-iris focus-visible:border-iris";
 
 export function TeamScreen() {
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -98,8 +98,8 @@ export function TeamScreen() {
           description="Change the filters, or clear the search, to see more opportunities."
         />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] border-collapse text-left text-sm">
+        <div className="ember-table-card" data-tour="team-table">
+          <table className="ember-table w-full min-w-[56rem] border-collapse text-left text-sm">
             <caption className="sr-only">Opportunities by owner and status</caption>
             <thead>
               <tr className="border-b border-cinder text-detail text-smoke">

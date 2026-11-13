@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, Ref, TextareaHTMLAttributes } from "react";
 import { cn } from "../lib/cn";
 
 const field =
-  "w-full rounded-control border border-smoke bg-paper px-3 text-sm text-coal placeholder:text-smoke transition-instant hover:border-coal disabled:opacity-50";
+  "w-full rounded-control border border-smoke bg-paper px-3 text-sm text-coal placeholder:text-smoke transition-instant hover:border-iris focus-visible:border-iris focus-visible:shadow-[0_0_0_3px_var(--ember-iris-wash)] disabled:opacity-50";
 
 export function Input({
   className,

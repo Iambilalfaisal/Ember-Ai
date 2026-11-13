@@ -13,11 +13,14 @@ const ICON: Record<Interaction["type"], { Icon: LucideIcon; label: string }> = {
 /** What happened on an opportunity, newest first. */
 export function Timeline({ interactions }: { interactions: Interaction[] }) {
   return (
-    <ol aria-label="Activity" className="divide-y divide-cinder border-y border-cinder">
+    <ol
+      aria-label="Activity"
+      className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card"
+    >
       {interactions.map((item) => {
         const { Icon, label } = ICON[item.type];
         return (
-          <li key={item.id} className="flex gap-3 py-3">
+          <li key={item.id} className="flex gap-3 px-4 py-3">
             <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-smoke" />
             <div className="min-w-0 flex-1">
               <p className="text-detail text-smoke">

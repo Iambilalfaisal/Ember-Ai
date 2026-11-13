@@ -19,7 +19,9 @@ export function SettingsNav() {
                 aria-current={current ? "page" : undefined}
                 className={cn(
                   "block rounded-control px-3 py-2 text-sm transition-instant",
-                  current ? "bg-ash font-medium text-coal" : "text-smoke hover:text-coal",
+                  current
+                    ? "bg-iris-wash font-medium text-iris-ink"
+                    : "text-smoke hover:text-iris-ink",
                 )}
               >
                 {section.label}

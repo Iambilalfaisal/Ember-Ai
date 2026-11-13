@@ -22,7 +22,7 @@ export function ItemDetail({
   return (
     <article aria-label={deal.company} className="space-y-5">
       <header>
-        <h2 className="text-lg font-semibold text-coal">{deal.company}</h2>
+        <h2 className="text-xl font-semibold text-coal">{deal.company}</h2>
         <p className="text-sm text-smoke">
           {contact.name}, {contact.title}
         </p>

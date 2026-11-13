@@ -100,8 +100,8 @@ function Column({
       ref={setNodeRef}
       aria-label={STAGE_LABEL[stage]}
       className={cn(
-        "flex min-h-64 flex-col rounded-panel border bg-ash p-2 transition-instant",
-        isOver ? "border-coal" : "border-cinder",
+        "flex min-h-64 flex-col rounded-panel border bg-iris-wash/40 p-2 transition-instant",
+        isOver ? "border-iris" : "border-cinder",
       )}
     >
       <header className="px-1 pb-2">

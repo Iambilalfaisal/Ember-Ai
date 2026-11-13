@@ -15,7 +15,7 @@ export function CallRow({ call }: { call: Call }) {
   const state = callState(call);
   const go = action(call);
   return (
-    <li className="flex flex-wrap items-center gap-x-6 gap-y-2 py-3">
+    <li className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
       <div className="w-36 shrink-0 text-sm text-smoke">{dateTime(call.startsAt)}</div>
       <div className="min-w-0 flex-1 basis-64">
         <p className="truncate text-sm font-medium text-coal">{call.company}</p>

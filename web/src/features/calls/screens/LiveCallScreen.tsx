@@ -158,14 +158,16 @@ function Stage({ call, events }: { call: Call; events: LiveEvent[] }) {
           onEnd={() => void endCall()}
           ending={end.isPending}
         />
-        <LivePanel
-          state={state}
-          elapsedSec={playback.elapsedMs / 1000}
-          paused={!playback.playing && !playback.finished}
-          onFeedback={feedback}
-          onAsked={markAsked}
-          className="rounded-panel border"
-        />
+        <div data-tour="live-panel" className="flex min-h-0 flex-col">
+          <LivePanel
+            state={state}
+            elapsedSec={playback.elapsedMs / 1000}
+            paused={!playback.playing && !playback.finished}
+            onFeedback={feedback}
+            onAsked={markAsked}
+            className="min-h-0 flex-1 rounded-panel border"
+          />
+        </div>
       </div>
     </div>
   );

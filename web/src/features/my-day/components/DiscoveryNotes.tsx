@@ -54,7 +54,7 @@ function NotesBody({ dealId }: { dealId: string }) {
         title="Couldn't load the notes"
         description="Check your connection and try again."
         onRetry={() => void refetch()}
-        className="py-2"
+        className="px-4 py-2"
       />
     );
   }
@@ -73,24 +73,24 @@ function NotesBody({ dealId }: { dealId: string }) {
           <HighlightedText text={data.text} phrases={data.highlights} />
         </p>
       </div>
-      <div className="divide-y divide-cinder border-y border-cinder">
+      <div className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
         <ExtractedField
           label="Open question"
           value={data.extracted.openQuestion}
           onSave={save("openQuestion")}
-          className="py-2"
+          className="px-4 py-2"
         />
         <ExtractedField
           label="Next action"
           value={data.extracted.nextAction}
           onSave={save("nextAction")}
-          className="py-2"
+          className="px-4 py-2"
         />
         <ExtractedField
           label="Blocker"
           value={data.extracted.blocker}
           onSave={save("blocker")}
-          className="py-2"
+          className="px-4 py-2"
         />
       </div>
     </div>
