@@ -19,11 +19,14 @@ export function AppShell({
   demoControls,
   roleSwitcher,
   palette,
+  extras,
 }: {
   children: ReactNode;
   demoControls?: ReactNode;
   roleSwitcher?: ReactNode;
   palette?: ReactNode;
+  /** More floating layers that sit above the page, such as the guided tour. */
+  extras?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -63,6 +66,7 @@ export function AppShell({
         </main>
       </div>
       {palette}
+      {extras}
     </div>
   );
 }
