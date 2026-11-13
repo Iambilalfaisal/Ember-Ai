@@ -6,20 +6,15 @@ import { useEffect } from "react";
 import { HOME } from "@/lib/routes";
 import { useSession } from "@/lib/session";
 
-/** The front door: signed in people go to their home page, everyone else to sign in. */
-export function RootRedirect() {
+/** Signed in people who open the front door go straight to their home page. Renders nothing. */
+export function SignedInRedirect() {
   const router = useRouter();
   const userId = useSession((s) => s.userId);
   const { data: me } = useMe();
 
   useEffect(() => {
-    if (userId === null) router.replace("/sign-in");
-    else if (me) router.replace(HOME[me.role]);
+    if (userId !== null && me) router.replace(HOME[me.role]);
   }, [userId, me, router]);
 
-  return (
-    <main className="min-h-screen">
-      <h1 className="sr-only">Ember</h1>
-    </main>
-  );
+  return null;
 }

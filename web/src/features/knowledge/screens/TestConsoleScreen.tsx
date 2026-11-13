@@ -22,7 +22,7 @@ export function TestConsoleScreen() {
   const result = ask.data;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       <KnowledgeNav />
       <form
         className="space-y-3"

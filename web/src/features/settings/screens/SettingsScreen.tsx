@@ -38,7 +38,7 @@ function Section({ slug }: { slug: Slug }) {
 export function SettingsScreen({ slug }: { slug: Slug }) {
   const label = SETTINGS_SECTIONS.find((s) => s.slug === slug)?.label;
   return (
-    <div className="flex max-w-6xl gap-10">
+    <div className="flex gap-10">
       <SettingsNav />
       <section aria-labelledby="settings-heading" className="min-w-0 flex-1 space-y-4">
         <h2 id="settings-heading" className="sr-only">

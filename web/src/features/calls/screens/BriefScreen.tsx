@@ -70,7 +70,7 @@ export function BriefScreen({ callId }: { callId: string }) {
   return (
     <div className="space-y-6">
       <CallHeader call={info} />
-      <Surface className="grid gap-x-10 gap-y-6 p-5 lg:grid-cols-2">
+      <Surface data-tour="brief" className="grid gap-x-10 gap-y-6 p-5 lg:grid-cols-2">
         <section aria-label="Account summary" className="lg:col-span-2">
           <h3 className="text-detail text-smoke">Where things stand</h3>
           <p className="mt-1 max-w-[72ch] text-sm text-coal">{b.accountSummary}</p>

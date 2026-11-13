@@ -39,12 +39,12 @@ describe("Guided tour", () => {
     renderTour();
 
     const tour = await screen.findByRole("complementary", { name: "Guided tour" });
-    expect(tour).toHaveTextContent("Step 1 of 10");
+    expect(tour).toHaveTextContent("Step 1 of 8");
     expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
 
     await user.click(screen.getByRole("button", { name: "Next" }));
     expect(push).toHaveBeenLastCalledWith("/my-day");
-    expect(tour).toHaveTextContent("Step 2 of 10");
+    expect(tour).toHaveTextContent("Step 2 of 8");
 
     // Jump to the team lead's step: the tour signs in as Priya and opens Team view.
     useUi.setState({ tourStep: 4 });

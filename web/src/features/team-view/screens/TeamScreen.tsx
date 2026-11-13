@@ -98,7 +98,7 @@ export function TeamScreen() {
           description="Change the filters, or clear the search, to see more opportunities."
         />
       ) : (
-        <div className="ember-table-card">
+        <div className="ember-table-card" data-tour="team-table">
           <table className="ember-table w-full min-w-[56rem] border-collapse text-left text-sm">
             <caption className="sr-only">Opportunities by owner and status</caption>
             <thead>
