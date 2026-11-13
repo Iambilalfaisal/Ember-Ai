@@ -13,7 +13,7 @@ import { applyTheme, usePrefs } from "@/lib/prefs";
 import { useUi } from "@/lib/ui";
 
 const ITEM =
-  "flex h-9 cursor-pointer items-center gap-3 rounded-control px-3 text-sm text-coal data-[selected=true]:bg-coal/8";
+  "flex h-9 cursor-pointer items-center gap-3 rounded-control px-3 text-sm text-coal data-[selected=true]:bg-iris-wash data-[selected=true]:text-iris-ink";
 const GROUP =
   "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-detail [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-smoke";
 

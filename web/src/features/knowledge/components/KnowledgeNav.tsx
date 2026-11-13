@@ -23,7 +23,7 @@ export function KnowledgeNav() {
             className={cn(
               "-mb-px border-b-2 px-3 py-2 text-sm transition-instant",
               current
-                ? "border-coal font-medium text-coal"
+                ? "border-iris font-medium text-iris-ink"
                 : "border-transparent text-smoke hover:text-coal",
             )}
           >

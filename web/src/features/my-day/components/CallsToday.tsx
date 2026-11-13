@@ -11,9 +11,9 @@ export function CallsToday({ calls }: { calls: Call[] }) {
       <h2 id="calls-today" className="text-sm font-medium text-coal">
         Calls today
       </h2>
-      <ul className="mt-2 divide-y divide-cinder">
+      <ul className="mt-2 divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
         {calls.map((call) => (
-          <li key={call.id} className="flex items-center justify-between gap-4 py-2">
+          <li key={call.id} className="flex items-center justify-between gap-4 px-4 py-2">
             <div className="min-w-0">
               <p className="truncate text-sm text-coal">
                 <span>{clockTime(call.startsAt)}</span> {call.company}

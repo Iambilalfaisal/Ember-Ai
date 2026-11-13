@@ -21,12 +21,15 @@ export function TaskList({
   // Read once per mount: "overdue" is judged as of when the list opened.
   const [now] = useState(() => Date.now());
   return (
-    <ul aria-label={label} className="divide-y divide-cinder border-y border-cinder">
+    <ul
+      aria-label={label}
+      className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card"
+    >
       {rows.map(({ task, company }) => {
         const done = task.status === "done";
         const overdue = !done && new Date(task.dueAt).getTime() < now;
         return (
-          <li key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
+          <li key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
             <label className="flex min-w-0 flex-1 basis-64 items-center gap-3 text-sm">
               <input
                 type="checkbox"
@@ -38,7 +41,7 @@ export function TaskList({
                     { onError: () => toast.error("Couldn't update that task. Try again.") },
                   )
                 }
-                className="size-4 shrink-0 accent-coal"
+                className="size-4 shrink-0 accent-iris"
               />
               <span className={done ? "text-smoke line-through" : "text-coal"}>{task.title}</span>
             </label>

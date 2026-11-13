@@ -15,7 +15,7 @@ import { plural } from "@/lib/format";
 import { STAGES, STAGE_LABEL } from "@/lib/stages";
 
 const selectClass =
-  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-coal disabled:opacity-50";
+  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-iris focus-visible:border-iris disabled:opacity-50";
 
 const CONSENT: { value: Settings["recordingConsent"]; label: string; description: string }[] = [
   {
@@ -45,7 +45,7 @@ export function SettingsData({
     return (
       <div className="space-y-3" aria-busy="true">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-12 w-full max-w-xl" />
+          <Skeleton key={i} className="h-12 w-full max-w-3xl" />
         ))}
       </div>
     );
@@ -95,7 +95,7 @@ export function FollowUpRules({ settings, canEdit }: { settings: Settings; canEd
 
   return (
     <form
-      className="max-w-xl space-y-4"
+      className="max-w-3xl space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
         if (allValid && changed) void save();
@@ -104,9 +104,9 @@ export function FollowUpRules({ settings, canEdit }: { settings: Settings; canEd
       <p className="text-sm text-smoke">
         An opportunity needs attention when it has had no call, email or note for this many days.
       </p>
-      <ul className="divide-y divide-cinder border-y border-cinder">
+      <ul className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
         {STAGES.map((stage) => (
-          <li key={stage} className="flex h-14 items-center justify-between gap-4">
+          <li key={stage} className="flex h-14 items-center justify-between gap-4 px-4">
             <label htmlFor={`days-${stage}`} className="text-sm text-coal">
               {STAGE_LABEL[stage]}
             </label>
@@ -170,7 +170,7 @@ export function ConsentAndRetention({
 
   return (
     <form
-      className="max-w-xl space-y-6"
+      className="max-w-3xl space-y-6"
       onSubmit={(event) => {
         event.preventDefault();
         if (changed) void save();
@@ -178,16 +178,16 @@ export function ConsentAndRetention({
     >
       <fieldset className="space-y-1" disabled={!canEdit}>
         <legend className="text-sm font-medium text-coal">Call consent</legend>
-        <div className="divide-y divide-cinder border-y border-cinder">
+        <div className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
           {CONSENT.map((option) => (
-            <label key={option.value} className="flex cursor-pointer items-start gap-3 py-3">
+            <label key={option.value} className="flex cursor-pointer items-start gap-3 px-4 py-3">
               <input
                 type="radio"
                 name="consent"
                 value={option.value}
                 checked={consent === option.value}
                 onChange={() => setConsent(option.value)}
-                className="mt-1 size-4 accent-coal"
+                className="mt-1 size-4 accent-iris"
               />
               <span>
                 <span className="block text-sm font-medium text-coal">{option.label}</span>
@@ -239,12 +239,12 @@ const INTEGRATION_NOTE: Record<string, string> = {
 
 export function Integrations({ settings }: { settings: Settings }) {
   return (
-    <div className="max-w-xl space-y-3">
-      <ul className="divide-y divide-cinder border-y border-cinder">
+    <div className="max-w-3xl space-y-3">
+      <ul className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
         {settings.integrations.map((integration) => (
           <li
             key={integration.id}
-            className="flex min-h-14 items-center justify-between gap-4 py-2"
+            className="flex min-h-14 items-center justify-between gap-4 px-4 py-2"
           >
             <div>
               <p className="text-sm font-medium text-coal">{integration.name}</p>
@@ -287,33 +287,35 @@ export function UsersAndRoles() {
     return <EmptyState title="No users yet" description="People appear here once they sign in." />;
   }
   return (
-    <table className="w-full max-w-3xl text-left text-sm">
-      <caption className="sr-only">Users and roles</caption>
-      <thead>
-        <tr className="border-b border-cinder text-detail text-smoke">
-          <th scope="col" className="py-2 pr-4 font-medium">
-            Name
-          </th>
-          <th scope="col" className="py-2 pr-4 font-medium">
-            Email
-          </th>
-          <th scope="col" className="py-2 font-medium">
-            Role
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-cinder">
-        {data.map((user) => (
-          <tr key={user.id}>
-            <th scope="row" className="h-14 pr-4 font-medium text-coal">
-              {user.name}
+    <div className="ember-table-card">
+      <table className="ember-table w-full text-left text-sm">
+        <caption className="sr-only">Users and roles</caption>
+        <thead>
+          <tr className="border-b border-cinder text-detail text-smoke">
+            <th scope="col" className="py-2 pr-4 font-medium">
+              Name
             </th>
-            <td className="pr-4 text-coal">{user.email}</td>
-            <td className="text-coal">{ROLE_NAME[user.role]}</td>
+            <th scope="col" className="py-2 pr-4 font-medium">
+              Email
+            </th>
+            <th scope="col" className="py-2 font-medium">
+              Role
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="divide-y divide-cinder">
+          {data.map((user) => (
+            <tr key={user.id}>
+              <th scope="row" className="h-14 pr-4 font-medium text-coal">
+                {user.name}
+              </th>
+              <td className="pr-4 text-coal">{user.email}</td>
+              <td className="text-coal">{ROLE_NAME[user.role]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -321,7 +323,7 @@ export function AiUsage({ settings }: { settings: Settings }) {
   const { month, answers, costUsd } = settings.aiUsage;
   const perAnswer = answers ? costUsd / answers : 0;
   return (
-    <div className="max-w-xl space-y-4">
+    <div className="max-w-3xl space-y-4">
       <p className="text-detail text-smoke">{month}</p>
       <div className="grid grid-cols-3 gap-6">
         <div className="border-t border-cinder pt-3">

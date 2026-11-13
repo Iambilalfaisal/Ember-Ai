@@ -1,7 +1,7 @@
 "use client";
 
 import { useBrief, useCall } from "@ember/api";
-import { ErrorState, Skeleton, buttonVariants, cn } from "@ember/ui";
+import { ErrorState, Skeleton, Surface, buttonVariants, cn } from "@ember/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CallHeader } from "../components/CallHeader";
@@ -29,7 +29,7 @@ export function BriefScreen({ callId }: { callId: string }) {
 
   if (call.isPending || brief.isPending) {
     return (
-      <div className="max-w-3xl space-y-4" aria-busy="true">
+      <div className="space-y-4" aria-busy="true">
         <Skeleton className="h-6 w-64" />
         <Skeleton className="h-4 w-80" />
         <Skeleton className="h-24 w-full" />
@@ -68,17 +68,19 @@ export function BriefScreen({ callId }: { callId: string }) {
   );
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <CallHeader call={info} />
-      <section aria-label="Account summary">
-        <h3 className="text-detail text-smoke">Where things stand</h3>
-        <p className="mt-1 max-w-[72ch] text-sm text-coal">{b.accountSummary}</p>
-      </section>
-      <Section title="Open questions" items={b.openQuestions} />
-      <Section title="Commitments owed" items={b.commitments} />
-      <Section title="Objections to expect" items={b.likelyObjections} />
-      <Section title="Plan for the call" items={b.agenda} ordered />
-      <div className="border-t border-cinder pt-4">{action}</div>
+      <Surface className="grid gap-x-10 gap-y-6 p-5 lg:grid-cols-2">
+        <section aria-label="Account summary" className="lg:col-span-2">
+          <h3 className="text-detail text-smoke">Where things stand</h3>
+          <p className="mt-1 max-w-[72ch] text-sm text-coal">{b.accountSummary}</p>
+        </section>
+        <Section title="Open questions" items={b.openQuestions} />
+        <Section title="Commitments owed" items={b.commitments} />
+        <Section title="Objections to expect" items={b.likelyObjections} />
+        <Section title="Plan for the call" items={b.agenda} ordered />
+        <div className="border-t border-cinder pt-4 lg:col-span-2">{action}</div>
+      </Surface>
     </div>
   );
 }

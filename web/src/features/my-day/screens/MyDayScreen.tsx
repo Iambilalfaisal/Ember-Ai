@@ -50,7 +50,10 @@ export function MyDayScreen() {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
       <div className="min-w-0 space-y-4">
-        <p aria-live="polite" className="text-sm text-coal">
+        <p
+          aria-live="polite"
+          className="rounded-panel border border-cinder bg-hero p-4 text-base text-coal shadow-card"
+        >
           <span className="tabular-nums font-medium">{countsLabel(counts.needYou)}</span>
           <span className="text-smoke">
             , <span className="tabular-nums">{plural(counts.callsToday, "call")}</span> today
@@ -70,7 +73,7 @@ export function MyDayScreen() {
         ) : (
           <ReflowList
             aria-label="Opportunities that need you"
-            className="divide-y divide-cinder border-y border-cinder"
+            className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card"
           >
             {items.map((item) => (
               <ReflowItem key={item.id}>
@@ -86,7 +89,7 @@ export function MyDayScreen() {
       </div>
 
       {selected ? (
-        <div className="min-w-0 lg:border-l lg:border-cinder lg:pl-8">
+        <div className="min-w-0 self-start rounded-panel border border-cinder bg-paper p-5 shadow-card lg:sticky lg:top-0">
           <ItemDetail
             key={selected.id}
             item={selected}

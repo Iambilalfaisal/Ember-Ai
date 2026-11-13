@@ -36,8 +36,8 @@ export function RoleSwitcher() {
                   toast(`Now viewing as ${user.name}.`);
                 }}
                 className={cn(
-                  "flex h-11 w-full items-center gap-3 rounded-control px-2 text-left transition-instant hover:bg-coal/8",
-                  selected && "bg-coal/8",
+                  "flex h-11 w-full items-center gap-3 rounded-control px-2 text-left transition-instant hover:bg-iris-wash",
+                  selected && "bg-iris-wash",
                 )}
               >
                 <Avatar initials={user.initials} />

@@ -81,6 +81,55 @@
   }
 }
 
+/* Shimmer: a soft sweep across loading placeholders. */
+@keyframes ember-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Rise: a short upward settle for content that arrives. Translate only, with no fade, so text keeps its contrast while it moves. */
+@keyframes ember-rise {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes ember-aura {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.06);
+  }
+}
+
+.ember-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--ember-iris) 18%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: ember-shimmer 1.8s linear infinite;
+}
+
+.ember-rise {
+  animation: ember-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.ember-aura {
+  animation: ember-aura 14s ease-in-out infinite;
+}
+
 .ember-ignite-edge {
   animation: ember-ignite 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }

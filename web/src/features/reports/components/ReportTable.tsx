@@ -4,8 +4,8 @@ import { shortDate } from "@/lib/format";
 export function ReportTable({ weeks }: { weeks: PilotReport["weeks"] }) {
   const reps = weeks[0]?.overdueByRep ?? [];
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
+    <div className="ember-table-card">
+      <table className="ember-table w-full text-left text-sm">
         <caption className="sr-only">Pilot metrics by week</caption>
         <thead>
           <tr className="border-b border-cinder text-detail text-smoke">

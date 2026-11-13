@@ -68,7 +68,9 @@ export const DialogTitle = DialogPrimitive.Title;
 export const DialogDescription = DialogPrimitive.Description;
 
 function Overlay() {
-  return <DialogPrimitive.Overlay className="ember-overlay fixed inset-0 z-40 bg-coal/40" />;
+  return (
+    <DialogPrimitive.Overlay className="ember-overlay fixed inset-0 z-40 bg-nav/60 backdrop-blur-[2px]" />
+  );
 }
 
 export function DialogContent({

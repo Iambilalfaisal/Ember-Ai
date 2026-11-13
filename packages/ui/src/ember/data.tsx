@@ -129,7 +129,7 @@ export function DraftComposer({
           {facts.map((fact) => (
             <li
               key={fact}
-              className="rounded-pill border border-cinder bg-paper px-2.5 py-0.5 text-detail text-coal"
+              className="rounded-pill border border-transparent bg-iris-wash px-2.5 py-0.5 text-detail text-iris-ink"
             >
               {fact}
             </li>
@@ -162,7 +162,7 @@ export function StageBadge({ stage, className }: { stage: string; className?: st
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center rounded-pill border border-cinder bg-paper px-2.5 text-detail font-medium text-coal",
+        "inline-flex h-6 items-center rounded-pill border border-transparent bg-iris-wash px-2.5 text-detail font-medium text-iris-ink",
         className,
       )}
     >
@@ -193,7 +193,7 @@ export function StatusPill({
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center gap-1.5 rounded-pill border bg-paper px-2.5 text-detail font-medium",
+        "inline-flex h-6 items-center gap-1.5 rounded-pill border bg-paper px-2.5 text-detail font-medium shadow-card",
         tone === "overdue" ? "border-flare text-flare" : "border-cinder text-coal",
         className,
       )}
@@ -204,7 +204,7 @@ export function StatusPill({
   );
 }
 
-/** A figure with its label. Not a card: tiles belong to the pipeline board. */
+/** A figure with its label, set on a card with a thin accent edge. */
 export function MetricTile({
   label,
   value,
@@ -217,7 +217,13 @@ export function MetricTile({
   className?: string;
 }) {
   return (
-    <div className={cn("border-t border-cinder pt-3", className)}>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-panel border border-cinder bg-paper p-4 shadow-card transition-ui hover:-translate-y-0.5 hover:shadow-lift",
+        className,
+      )}
+    >
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-brand" />
       <p className="text-detail text-smoke">{label}</p>
       <p className="text-2xl font-semibold tabular-nums tracking-[-0.01em] text-coal">{value}</p>
       {note ? <p className="text-detail text-smoke">{note}</p> : null}
@@ -239,6 +245,7 @@ export function TrendChart({
   height?: number;
   className?: string;
 }) {
+  const gradientId = useId().replace(/:/g, "");
   const pad = 4;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -256,15 +263,25 @@ export function TrendChart({
       viewBox={`0 0 ${width} ${height}`}
       className={cn("h-16 w-60 max-w-full overflow-visible", className)}
     >
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="var(--color-iris)" stopOpacity={0.28} />
+          <stop offset="100%" stopColor="var(--color-iris)" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={`${pad},${height - pad} ${points.map(([x, y]) => `${x},${y}`).join(" ")} ${width - pad},${height - pad}`}
+        fill={`url(#${gradientId})`}
+      />
       <polyline
         points={points.map(([x, y]) => `${x},${y}`).join(" ")}
         fill="none"
-        stroke="var(--color-coal)"
+        stroke="var(--color-iris)"
         strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      {last ? <circle cx={last[0]} cy={last[1]} r={3} fill="var(--color-coal)" /> : null}
+      {last ? <circle cx={last[0]} cy={last[1]} r={3} fill="var(--color-iris)" /> : null}
     </svg>
   );
 }
@@ -273,7 +290,7 @@ export function DemoBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center rounded-pill border border-cinder bg-paper px-2.5 text-detail font-medium text-smoke",
+        "inline-flex h-6 items-center rounded-pill border border-transparent bg-iris-wash px-2.5 text-detail font-medium text-iris-ink",
         className,
       )}
     >

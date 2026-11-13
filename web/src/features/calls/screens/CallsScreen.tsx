@@ -15,7 +15,7 @@ export function CallsScreen() {
   });
 
   return (
-    <div className="max-w-5xl space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <Segmented
           label="Show calls"
@@ -50,7 +50,10 @@ export function CallsScreen() {
           description="Change the filter or clear the search. Calls you finish appear here with their summary."
         />
       ) : (
-        <ul aria-label="Calls" className="divide-y divide-cinder border-y border-cinder">
+        <ul
+          aria-label="Calls"
+          className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card"
+        >
           {data.map((call) => (
             <CallRow key={call.id} call={call} />
           ))}

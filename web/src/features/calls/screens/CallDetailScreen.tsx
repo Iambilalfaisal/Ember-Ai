@@ -25,7 +25,7 @@ export function CallDetailScreen({ callId }: { callId: string }) {
 
   if (isPending) {
     return (
-      <div className="max-w-3xl space-y-4" aria-busy="true">
+      <div className="space-y-4" aria-busy="true">
         <Skeleton className="h-6 w-64" />
         <Skeleton className="h-4 w-80" />
         <Skeleton className="h-40 w-full" />
@@ -46,7 +46,7 @@ export function CallDetailScreen({ callId }: { callId: string }) {
   const state = callState(call);
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <CallHeader call={call} />
         <StatusPill tone={state.tone}>{state.label}</StatusPill>
@@ -61,8 +61,8 @@ export function CallDetailScreen({ callId }: { callId: string }) {
 
         <TabsContent value="summary">
           {summary ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
+            <div className="grid gap-x-10 gap-y-4 rounded-panel border border-cinder bg-paper p-5 shadow-card lg:grid-cols-2">
+              <div className="flex items-center gap-3 lg:col-span-2">
                 <h3 className="text-sm font-medium text-coal">
                   {summary.status === "draft" ? "Draft summary" : "Summary"}
                 </h3>
@@ -77,7 +77,7 @@ export function CallDetailScreen({ callId }: { callId: string }) {
                   <StatusPill tone="done">Approved</StatusPill>
                 )}
               </div>
-              <ul className="max-w-[72ch] list-disc space-y-1 pl-5 text-sm text-coal">
+              <ul className="max-w-[72ch] list-disc space-y-1 pl-5 text-sm text-coal lg:col-span-2">
                 {summary.keyPoints.map((point) => (
                   <li key={point}>{point}</li>
                 ))}
@@ -146,9 +146,9 @@ export function CallDetailScreen({ callId }: { callId: string }) {
               description="Answers, objections and suggested questions appear here after a call with the assistant on."
             />
           ) : (
-            <ul className="divide-y divide-cinder border-y border-cinder">
+            <ul className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
               {cards.map((card) => (
-                <li key={card.id} className="space-y-1 py-3">
+                <li key={card.id} className="space-y-1 px-4 py-3">
                   <p className="text-detail text-smoke">
                     {CARD_KIND_LABEL[card.kind]} at {formatDuration(card.atSec)}
                     {card.verdict ? `, marked ${card.verdict}` : ""}

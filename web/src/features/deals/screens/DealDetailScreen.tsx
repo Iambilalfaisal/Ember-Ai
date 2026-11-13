@@ -11,7 +11,7 @@ import { useUserMap } from "@/lib/useUserMap";
 import { Timeline } from "../components/Timeline";
 
 const selectClass =
-  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-coal";
+  "h-9 rounded-control border border-smoke bg-paper px-2 text-sm text-coal transition-instant hover:border-iris focus-visible:border-iris";
 
 export function DealDetailScreen({ dealId }: { dealId: string }) {
   const { data, isPending, isError, refetch } = useDeal(dealId);
@@ -114,19 +114,19 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
 
         <section
           aria-label="Where it stands"
-          className="divide-y divide-cinder border-y border-cinder"
+          className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card"
         >
           <ExtractedField
             label="Next action"
             value={deal.nextAction ?? "None set"}
             onSave={(value) => save({ nextAction: value.trim() || null }, "Next action saved.")}
-            className="py-2"
+            className="px-4 py-2"
           />
           <ExtractedField
             label="Blocker"
             value={deal.blocker ?? "None"}
             onSave={(value) => save({ blocker: value.trim() || null }, "Blocker saved.")}
-            className="py-2"
+            className="px-4 py-2"
           />
         </section>
 
@@ -153,7 +153,7 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
         </section>
       </div>
 
-      <aside className="min-w-0 space-y-6 lg:border-l lg:border-cinder lg:pl-8">
+      <aside className="min-w-0 space-y-6 self-start rounded-panel border border-cinder bg-paper p-5 shadow-card">
         <section aria-labelledby="upcoming-call">
           <h3 id="upcoming-call" className="text-sm font-medium text-coal">
             Upcoming call
@@ -178,14 +178,14 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
           <h3 id="contacts" className="text-sm font-medium text-coal">
             Contacts
           </h3>
-          <ul className="mt-1 divide-y divide-cinder border-y border-cinder">
+          <ul className="mt-1 divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
             {contacts.map((contact) => (
-              <li key={contact.id} className="py-2">
+              <li key={contact.id} className="px-4 py-2">
                 <p className="text-sm font-medium text-coal">{contact.name}</p>
                 <p className="text-detail text-smoke">{contact.title}</p>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="text-detail text-coal underline-offset-2 hover:underline"
+                  className="break-all text-detail text-coal underline-offset-2 hover:underline"
                 >
                   {contact.email}
                 </a>

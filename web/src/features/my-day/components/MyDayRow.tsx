@@ -17,8 +17,8 @@ export function MyDayRow({
       aria-current={selected ? "true" : undefined}
       onClick={onSelect}
       className={cn(
-        "flex w-full gap-3 border-l-2 px-3 py-3 text-left transition-instant hover:bg-coal/5",
-        selected ? "border-coal bg-coal/5" : "border-transparent",
+        "flex w-full gap-3 border-l-2 px-3 py-3 text-left transition-instant hover:bg-iris-wash/60",
+        selected ? "border-iris bg-iris-wash" : "border-transparent",
       )}
     >
       <HeatIndicator heat={item.deal.heat} className="mt-1" />

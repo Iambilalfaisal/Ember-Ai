@@ -16,7 +16,8 @@ function niceMax(value: number): number {
   return step * magnitude;
 }
 
-const stroke = (tone: ChartSeries["tone"]) => `var(--color-${tone})`;
+const stroke = (tone: ChartSeries["tone"]) =>
+  tone === "coal" ? "var(--color-iris)" : "var(--color-smoke)";
 
 /**
  * One measure by week. A line (or columns) from zero, three hairline gridlines, the latest value
@@ -74,7 +75,7 @@ export function WeeklyChart({
   };
 
   return (
-    <figure className="min-w-0">
+    <figure className="min-w-0 rounded-panel border border-cinder bg-paper p-4 shadow-card">
       <figcaption>
         <h3 className="text-sm font-medium text-coal">{title}</h3>
         <p className="text-detail text-smoke">{unit}</p>

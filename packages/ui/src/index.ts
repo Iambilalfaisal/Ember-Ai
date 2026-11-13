@@ -63,4 +63,5 @@ export {
 } from "./ember/data";
 export type { DraftStatus, StatusTone } from "./ember/data";
 export { EmptyState, ErrorState } from "./ember/states";
+export { Surface, Rise, PageHeader, Aura } from "./ember/layout";
 export { ReflowList, ReflowItem, SpringBoard, SpringTile } from "./ember/reflow";

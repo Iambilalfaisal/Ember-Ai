@@ -28,7 +28,8 @@ describe("contrast (WCAG 2.2 AA)", () => {
   // flare text on ash is 4.2:1 (error text only appears on paper), and a glow dot on white is 2.2:1
   // (the warm dot carries a glow-ink outline, tested below).
   // Text needs 4.5:1. Dots, edges and the focus ring are non-text and need 3:1.
-  const text: [string, "coal" | "smoke" | "glow-ink" | "flare", "paper" | "ash"][] = [
+  type Name = (typeof COLOR_NAMES)[number];
+  const text: [string, Name, Name][] = [
     ["primary text on surface", "coal", "paper"],
     ["primary text on background", "coal", "ash"],
     ["secondary text on surface", "smoke", "paper"],
@@ -36,17 +37,24 @@ describe("contrast (WCAG 2.2 AA)", () => {
     ["warm text on surface", "glow-ink", "paper"],
     ["warm text on background", "glow-ink", "ash"],
     ["error text on surface", "flare", "paper"],
+    ["accent text on surface", "iris-ink", "paper"],
+    ["accent text on background", "iris-ink", "ash"],
+    ["accent text on soft wash", "iris-ink", "iris-wash"],
+    ["primary text on soft wash", "coal", "iris-wash"],
+    ["text on accent fill", "iris-fg", "iris"],
+    ["rail text", "nav-ink", "nav"],
+    ["rail secondary text", "nav-muted", "nav"],
+    ["rail accent text", "nav-accent", "nav"],
   ];
-  const nonText: [
-    string,
-    "glow" | "glow-ink" | "frost" | "moss" | "flare" | "coal",
-    "paper" | "ash",
-  ][] = [
+  const nonText: [string, Name, Name][] = [
     ["warm dot outline on surface", "glow-ink", "paper"],
     ["cooling dot on surface", "frost", "paper"],
     ["done icon on surface", "moss", "paper"],
     ["error icon on surface", "flare", "paper"],
-    ["focus ring on background", "coal", "ash"],
+    ["focus ring on background", "iris", "ash"],
+    ["focus ring on surface", "iris", "paper"],
+    ["accent fill on surface", "iris", "paper"],
+    ["rail focus ring", "nav-accent", "nav"],
   ];
 
   for (const theme of themes) {

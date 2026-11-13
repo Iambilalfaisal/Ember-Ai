@@ -10,7 +10,7 @@ export function RevivalScreen() {
 
   if (isPending) {
     return (
-      <div className="max-w-3xl space-y-4" aria-busy="true">
+      <div className="space-y-4" aria-busy="true">
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-28 w-full" />
         ))}
@@ -28,16 +28,16 @@ export function RevivalScreen() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div>
       {data.items.length === 0 ? (
         <EmptyState
           title="No opportunities to reopen"
           description="Older opportunities with a reason to come back appear here, each with a suggested way in."
         />
       ) : (
-        <ul className="divide-y divide-cinder border-y border-cinder">
+        <ul className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
           {data.items.map(({ deal, contact, originalNeed, wayBackIn }) => (
-            <li key={deal.id} className="py-5">
+            <li key={deal.id} className="px-5 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-base font-semibold text-coal">{deal.company}</h2>
