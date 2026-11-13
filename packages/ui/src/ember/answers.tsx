@@ -224,15 +224,16 @@ export function NextQuestion({
   const [own, setOwn] = useState(false);
   const asked = controlled ?? own;
   return (
-    <div className={cn("flex items-start gap-3", className)}>
+    <div className={cn("flex flex-wrap items-start gap-x-3 gap-y-1", className)}>
       <MessageCircleQuestion aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-smoke" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-[11rem] flex-1">
         <p className="text-detail text-smoke">Ask next</p>
         <p className="max-w-[60ch] text-sm font-medium text-coal">{question}</p>
       </div>
       <Button
         variant="ghost"
         size="sm"
+        className="ml-auto"
         disabled={asked}
         onClick={() => {
           setOwn(true);

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { usePrefs } from "@/lib/prefs";
+import { useUi } from "@/lib/ui";
 
 /** Demo only: reset the world, jump to the scripted call, and slow responses down or not. */
 export function DemoControls() {
@@ -26,6 +27,7 @@ export function DemoControls() {
   const latency = usePrefs((s) => s.latency);
   const setLatency = usePrefs((s) => s.setLatency);
   const scenarioCall = calls?.find((c) => c.scenarioId);
+  const setTourStep = useUi((s) => s.setTourStep);
 
   if (!isDemoMode()) return null;
 
@@ -77,6 +79,16 @@ export function DemoControls() {
             }
           >
             Reset demo
+          </Button>
+
+          <Button
+            className="w-full"
+            onClick={() => {
+              setTourStep(0);
+              setOpen(false);
+            }}
+          >
+            Start the guided tour
           </Button>
 
           {scenarioCall ? (

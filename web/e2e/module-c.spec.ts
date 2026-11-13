@@ -24,6 +24,8 @@ async function setTheme(page: Page, theme: "light" | "dark") {
 }
 
 async function scanBothThemes(page: Page, name: string) {
+  // A toast fading out is half transparent and fails the contrast check; let it finish first.
+  await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 15_000 });
   for (const theme of ["light", "dark"] as const) {
     await setTheme(page, theme);
     await scan(page);

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
 import { CommandPalette } from "@/components/CommandPalette";
-import { DemoControls, RoleSwitcher } from "@/features/demo";
+import { DemoControls, GuidedTour, RoleSwitcher } from "@/features/demo";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,6 +9,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       demoControls={<DemoControls />}
       roleSwitcher={<RoleSwitcher />}
       palette={<CommandPalette />}
+      extras={<GuidedTour />}
     >
       {children}
     </AppShell>
