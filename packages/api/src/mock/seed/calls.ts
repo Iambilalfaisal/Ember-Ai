@@ -193,6 +193,7 @@ export function seedCalls(ctx: SeedContext): void {
     participantsJson: json([
       { name: "Tom Reyes", role: "Director of Operations", side: "client" },
       { name: "Lena Hoff", role: "IT lead", side: "client" },
+      { name: "Nadia Okoro", role: "CFO", side: "client" },
       { name: "Sam Okafor", role: "Account executive", side: "rep" },
     ]),
     scenarioId: "blue-harbor",

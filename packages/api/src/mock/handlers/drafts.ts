@@ -1,7 +1,14 @@
 import { Draft, UpdateDraftBody } from "../../domain";
 import { getNow } from "../clock";
 import { db } from "../db";
-import { addInteraction, assertCanSeeDeal, getDeal, markDealAttended } from "../logic";
+import {
+  addAudit,
+  addInteraction,
+  assertCanSeeDeal,
+  getDeal,
+  isOptedOut,
+  markDealAttended,
+} from "../logic";
 import { toDraft } from "../mappers";
 import { composeDraft } from "../seed/drafts";
 import { ApiError, notFound, route } from "./shared";
@@ -43,6 +50,8 @@ export const draftHandlers = [
       if (draft.status === "sent")
         throw new ApiError(409, "already_sent", "This draft was already sent.");
       const deal = getDeal(draft.dealId);
+      if (isOptedOut(deal))
+        throw new ApiError(409, "opted_out", "This contact opted out. Nothing can be drafted.");
       const contact = db.contact.findFirst({ where: { id: { equals: deal.primaryContactId } } });
       const version = draft.version + 1;
       const [topic = "Next steps", fact = ""] = draft.factsUsed;
@@ -77,6 +86,8 @@ export const draftHandlers = [
       const draft = getDraft(params["id"] ?? "");
       if (draft.status === "sent")
         throw new ApiError(409, "already_sent", "This draft was already sent.");
+      if (isOptedOut(getDeal(draft.dealId)))
+        throw new ApiError(409, "opted_out", "This contact opted out. Nothing can be sent.");
       const sent = db.draft.update({
         where: { id: { equals: draft.id } },
         data: { status: "sent", sentAt: getNow().toISOString() },
@@ -86,6 +97,13 @@ export const draftHandlers = [
         type: "email",
         summary: `Sent: ${draft.subject}`,
         userId: user.id,
+      });
+      addAudit({
+        userId: user.id,
+        dealId: draft.dealId,
+        action: "draft_sent",
+        summary: `Sent "${draft.subject}" (written by Ember from ${draft.factsUsed.length} facts)`,
+        via: "copilot",
       });
       // Sending closes the loop: the item leaves My Day and the opportunity is on track again.
       markDealAttended(draft.dealId, `Sent: ${draft.subject}`);

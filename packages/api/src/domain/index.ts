@@ -8,3 +8,4 @@ export * from "./settings";
 export * from "./live";
 export * from "./requests";
 export * from "./notifications";
+export * from "./copilot";

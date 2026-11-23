@@ -7,23 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/lib/session";
 import { useUi } from "@/lib/ui";
-
-type Step = {
-  /** The headline: what this part of the product does for the customer. */
-  title: string;
-  /** Why it matters, for the person watching. */
-  value: string;
-  /** What to do on this screen, in one or two sentences. */
-  action: string;
-  /** A line for the presenter to say out loud. Shown under "Presenter notes". */
-  say: string;
-  userId: "sam" | "priya" | "alex";
-  href: string;
-  /** The part of the screen to light up: the value of a data-tour attribute. */
-  target: string;
-  /** Which bottom corner the card sits in, so it stays off the lit area. */
-  dock: "left" | "right";
-};
+import { MORNING_STEPS, RESCUE_STEPS, type Step } from "./paths";
+import type { TourPath } from "@/lib/ui";
 
 // The demo story, in the order an investor sees it: focus, follow-up, preparation, the call, the
 // summary, the manager, control and proof. Each step knows who to be and where to go, so Next moves
@@ -177,8 +162,13 @@ function Spotlight({ target, step }: { target: string; step: number }) {
   );
 }
 
+export function stepsFor(path: TourPath): readonly Step[] {
+  return path === "morning" ? MORNING_STEPS : path === "rescue" ? RESCUE_STEPS : TOUR_STEPS;
+}
+
 /** A guided, dismissible walkthrough of the product story. It never blocks the page behind it. */
 export function GuidedTour() {
+  const path = useUi((s) => s.tourPath);
   const step = useUi((s) => s.tourStep);
   const setStep = useUi((s) => s.setTourStep);
   const signIn = useSession((s) => s.signIn);
@@ -195,17 +185,18 @@ export function GuidedTour() {
   }, [step, setStep]);
 
   if (!isDemoMode() || step === null) return null;
-  const current = TOUR_STEPS[step];
+  const steps = stepsFor(path);
+  const current = steps[step];
   if (!current) return null;
 
   const goTo = (index: number) => {
-    const target = TOUR_STEPS[index];
+    const target = steps[index];
     if (!target) return;
     setStep(index);
     if (me?.id !== target.userId) signIn(target.userId);
     router.push(target.href);
   };
-  const last = step === TOUR_STEPS.length - 1;
+  const last = step === steps.length - 1;
 
   return (
     <>
@@ -218,7 +209,7 @@ export function GuidedTour() {
         )}
       >
         <div aria-hidden="true" className="flex gap-1 bg-iris-wash p-2">
-          {TOUR_STEPS.map((_, i) => (
+          {steps.map((_, i) => (
             <span
               key={i}
               className={cn(
@@ -231,7 +222,7 @@ export function GuidedTour() {
         <div className="p-4">
           <div className="flex items-start justify-between gap-3">
             <p className="text-detail font-medium text-iris-ink">
-              Step {step + 1} of {TOUR_STEPS.length}
+              Step {step + 1} of {steps.length}
             </p>
             <Button
               variant="ghost"

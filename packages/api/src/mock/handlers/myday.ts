@@ -23,7 +23,8 @@ export const myDayHandlers = [
           const deal = db.deal.findFirst({ where: { id: { equals: i.dealId } } });
           const contact =
             deal && db.contact.findFirst({ where: { id: { equals: deal.primaryContactId } } });
-          if (!deal || !contact) return [];
+          // An opted-out contact never shows up as something to do.
+          if (!deal || !contact || contact.status === "opted_out") return [];
           return [
             {
               id: i.id,
@@ -44,7 +45,7 @@ export const myDayHandlers = [
       const calls = db.call
         .findMany({ where: { status: { equals: "upcoming" } } })
         .filter((c) => user.role !== "rep" || c.repId === user.id)
-        .filter((c) => new Date(c.startsAt).toDateString() === now.toDateString())
+        .filter((c) => c.startsAt.slice(0, 10) === now.toISOString().slice(0, 10))
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
         .map((c) =>
           toCall(c, db.deal.findFirst({ where: { id: { equals: c.dealId } } })?.company ?? ""),

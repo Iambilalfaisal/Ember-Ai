@@ -21,10 +21,20 @@ export const Deal = z.object({
   originalNeed: z.string().nullable(),
   wayBackIn: z.string().nullable(),
   createdAt: isoDate,
+  /** When the next action is due. Drives My Day. Null means nothing is scheduled. */
+  nextActionDueAt: isoDate.nullable().default(null),
+  /** The last call, meeting or real reply. Notes and stage moves do not count. */
+  lastMeaningfulAt: isoDate.nullable().default(null),
+  source: z.string().nullable().default(null),
+  currency: z.string().default("USD"),
+  /** Why the deal closed. Required when it moves to won or lost. */
+  closeReason: z.string().nullable().default(null),
+  /** When the deal entered its current stage. Drives days in stage. Null falls back to createdAt. */
+  stageChangedAt: isoDate.nullable().default(null),
 });
 export type Deal = z.infer<typeof Deal>;
 
-export const interactionTypes = ["call", "email", "note", "stage_change"] as const;
+export const interactionTypes = ["call", "meeting", "email", "note", "stage_change"] as const;
 export const Interaction = z.object({
   id: z.string(),
   dealId: z.string(),
@@ -33,6 +43,9 @@ export const Interaction = z.object({
   summary: z.string(),
   userId: z.string().nullable(),
   callId: z.string().nullable(),
+  /** Stage changes only: where the deal came from and went to. */
+  fromStage: Stage.nullable().default(null),
+  toStage: Stage.nullable().default(null),
 });
 export type Interaction = z.infer<typeof Interaction>;
 

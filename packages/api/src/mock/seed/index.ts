@@ -1,6 +1,7 @@
 import { clearDb, resetCounter } from "../db";
 import { getNow } from "../clock";
 import { seedCalls } from "./calls";
+import { seedCopilot } from "./copilot";
 import { seedKnowledge } from "./knowledge";
 import {
   seedAttention,
@@ -29,6 +30,7 @@ export function seedWorld(options: SeedOptions = {}): void {
   seedCalls(ctx);
   seedKnowledge(ctx);
   seedReports(ctx);
+  seedCopilot(ctx);
 }
 
 export { DOCUMENTS } from "./knowledge";

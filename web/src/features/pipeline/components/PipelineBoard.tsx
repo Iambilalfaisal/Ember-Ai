@@ -22,12 +22,30 @@ import Link from "next/link";
 import { useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { money } from "@/lib/format";
+import { dealSignals } from "@/lib/signals";
+import { useNow } from "@/lib/useNow";
 import { STAGE_LABEL, STAGES } from "@/lib/stages";
 
 const collide: CollisionDetection = (args) => {
   const within = pointerWithin(args);
   return within.length > 0 ? within : rectIntersection(args);
 };
+
+function Flags({ deal }: { deal: Deal }) {
+  const signals = dealSignals(deal, useNow());
+  const active = deal.stage !== "won" && deal.stage !== "lost";
+  if (!active) return null;
+  return (
+    <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-detail">
+      {signals.overdueDays > 0 ? (
+        <span className="font-medium text-flare">Next action {signals.overdueDays}d late</span>
+      ) : signals.noNextAction ? (
+        <span className="font-medium text-flare">No next action</span>
+      ) : null}
+      <span className="text-smoke">{signals.daysInStage}d in stage</span>
+    </p>
+  );
+}
 
 function TileBody({ deal, owner }: { deal: Deal; owner: User | undefined }) {
   return (
@@ -78,6 +96,7 @@ function DealTile({ deal, owner }: { deal: Deal; owner: User | undefined }) {
         </div>
         <div className="mt-1.5 pl-5">
           <TileBody deal={deal} owner={owner} />
+          <Flags deal={deal} />
         </div>
       </div>
     </SpringTile>

@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import { api } from "../client";
 import type {
   EndCallBody,
+  LogCallBody,
+  NotificationPrefs,
   UpdateDealBody,
   UpdateDraftBody,
   UpdateNotesBody,
@@ -54,6 +56,15 @@ export const useScorecard = () =>
 export const usePilotReport = () => useQuery({ queryKey: keys.pilot, queryFn: api.reports.pilot });
 export const useNotifications = () =>
   useQuery({ queryKey: keys.notifications, queryFn: api.notifications.list });
+export const useDigest = () => useQuery({ queryKey: keys.digest, queryFn: api.copilot.digest });
+export const useSuggestions = () =>
+  useQuery({ queryKey: keys.suggestions, queryFn: api.copilot.suggestions });
+export const useAudit = (filters: Parameters<typeof api.copilot.audit>[0] = {}) =>
+  useQuery({ queryKey: keys.audit(filters), queryFn: () => api.copilot.audit(filters) });
+export const usePreferences = () =>
+  useQuery({ queryKey: keys.preferences, queryFn: api.copilot.preferences });
+export const useLists = () =>
+  useQuery({ queryKey: [...keys.settings, "lists"], queryFn: api.settings.lists });
 export const useSettings = () => useQuery({ queryKey: keys.settings, queryFn: api.settings.get });
 
 // Writes ----------------------------------------------------------------------------------------
@@ -76,6 +87,20 @@ export const useSnoozeMyDayItem = () =>
 
 export const useUpdateDeal = () =>
   useWrite((v: { id: string; body: UpdateDealBody }) => api.deals.update(v.id, v.body));
+export const useCreateDeal = () =>
+  useWrite((body: Parameters<typeof api.deals.create>[0]) => api.deals.create(body));
+export const useImportDeals = () =>
+  useWrite((body: Parameters<typeof api.deals.import>[0]) => api.deals.import(body));
+export const useUpdateContact = () =>
+  useWrite((v: { id: string; body: Parameters<typeof api.contacts.update>[1] }) =>
+    api.contacts.update(v.id, v.body),
+  );
+export const useApproveSuggestion = () => useWrite((id: string) => api.copilot.approve(id));
+export const useDismissSuggestion = () => useWrite((id: string) => api.copilot.dismiss(id));
+export const useLogCall = () =>
+  useWrite((v: { dealId: string; body: LogCallBody }) => api.copilot.logCall(v.dealId, v.body));
+export const useUpdatePreferences = () =>
+  useWrite((body: Partial<NotificationPrefs>) => api.copilot.updatePreferences(body));
 export const useUpdateNotes = () =>
   useWrite((v: { dealId: string; body: UpdateNotesBody }) =>
     api.deals.updateNotes(v.dealId, v.body),

@@ -1,4 +1,5 @@
 import { callHandlers } from "./calls";
+import { copilotHandlers } from "./copilot";
 import { dealHandlers } from "./deals";
 import { draftHandlers } from "./drafts";
 import { knowledgeHandlers } from "./knowledge";
@@ -18,6 +19,7 @@ export const handlers = [
   ...knowledgeHandlers,
   ...reportHandlers,
   ...notificationHandlers,
+  ...copilotHandlers,
 ];
 
 export { answerQuestion, HOLDING_LINE } from "./knowledge";

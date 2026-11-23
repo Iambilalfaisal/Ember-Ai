@@ -1,4 +1,4 @@
-import { PilotReport, Settings, UpdateSettingsBody } from "../../domain";
+import { PickLists, PilotReport, Settings, UpdateSettingsBody } from "../../domain";
 import { db } from "../db";
 import { json, toSettings } from "../mappers";
 import { notFound, route } from "./shared";
@@ -30,6 +30,16 @@ export const reportHandlers = [
     },
   }),
 
+  route("get", "/settings/lists", {
+    run: () => {
+      const { sources, lostReasons } = toSettings(
+        db.settings.findFirst({ where: { id: { equals: "settings" } } }) ??
+          notFound("The settings"),
+      );
+      return PickLists.parse({ sources, lostReasons });
+    },
+  }),
+
   route("get", "/settings", {
     roles: ["lead", "admin"],
     run: () =>
@@ -56,6 +66,11 @@ export const reportHandlers = [
         }),
         ...(body.recordingConsent && { recordingConsent: body.recordingConsent }),
         ...(body.retentionDays !== undefined && { retentionDays: body.retentionDays }),
+        ...(body.sources && { sources: body.sources }),
+        ...(body.lostReasons && { lostReasons: body.lostReasons }),
+        ...(body.timeZone && { timeZone: body.timeZone }),
+        ...(body.workingDays && { workingDays: body.workingDays }),
+        ...(body.defaultCurrency && { defaultCurrency: body.defaultCurrency }),
       });
       db.settings.update({ where: { id: { equals: "settings" } }, data: { json: json(next) } });
       return next;

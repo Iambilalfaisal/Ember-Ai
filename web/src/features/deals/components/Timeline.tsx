@@ -1,10 +1,11 @@
 import type { Interaction } from "@ember/api";
-import { ArrowRightLeft, Mail, NotebookPen, Phone, type LucideIcon } from "lucide-react";
+import { ArrowRightLeft, Mail, NotebookPen, Phone, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { dateTime } from "@/lib/format";
 
 const ICON: Record<Interaction["type"], { Icon: LucideIcon; label: string }> = {
   call: { Icon: Phone, label: "Call" },
+  meeting: { Icon: Users, label: "Meeting" },
   email: { Icon: Mail, label: "Email" },
   note: { Icon: NotebookPen, label: "Note" },
   stage_change: { Icon: ArrowRightLeft, label: "Stage change" },

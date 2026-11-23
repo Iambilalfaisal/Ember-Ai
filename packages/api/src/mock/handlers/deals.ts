@@ -1,7 +1,11 @@
 import { z } from "zod";
 import {
   ContactRow,
+  CreateDealBody,
   Deal,
+  ImportDealsBody,
+  ImportResult,
+  UpdateContactBody,
   DealDetail,
   DiscoveryNotes,
   Task,
@@ -12,7 +16,14 @@ import {
 } from "../../domain";
 import { getNow } from "../clock";
 import { db, nextId } from "../db";
-import { addInteraction, assertCanSeeDeal, canSeeDeal, getDeal, userName } from "../logic";
+import {
+  addAudit,
+  addInteraction,
+  assertCanSeeDeal,
+  assignDeal,
+  canSeeDeal,
+  getDeal,
+} from "../logic";
 import {
   toCall,
   toContact,
@@ -23,10 +34,49 @@ import {
   toTask,
   toUser,
 } from "../mappers";
-import { composeDraft } from "../seed/drafts";
 import { ApiError, notFound, route, STAGE_LABEL } from "./shared";
 
 const HIDDEN = ["revival", "declined"];
+
+/** A new opportunity starts in Discovery, owned by whoever added it. */
+function createDeal(userId: string, body: CreateDealBody) {
+  const now = getNow().toISOString();
+  const id = nextId("deal");
+  const contactId = nextId("c");
+  db.contact.create({
+    id: contactId,
+    dealId: id,
+    name: body.contactName,
+    title: body.contactTitle,
+    email: body.contactEmail,
+    phone: null,
+    role: "other",
+    status: "active",
+  });
+  return db.deal.create({
+    id,
+    company: body.company,
+    stage: "discovery",
+    value: body.value,
+    ownerId: userId,
+    heat: "warm",
+    status: "on_track",
+    lastActivityAt: now,
+    lastActivityNote: "Added to Ember",
+    nextAction: null,
+    blocker: null,
+    primaryContactId: contactId,
+    originalNeed: null,
+    wayBackIn: null,
+    createdAt: now,
+    nextActionDueAt: null,
+    lastMeaningfulAt: null,
+    source: body.source,
+    currency: body.currency,
+    closeReason: null,
+    stageChangedAt: now,
+  });
+}
 
 export const dealHandlers = [
   route("get", "/deals", {
@@ -102,82 +152,60 @@ export const dealHandlers = [
         ) {
           throw new ApiError(400, "invalid_request", "That person doesn't exist.");
         }
-        const wasUnassigned = deal.ownerId === null;
-        db.deal.update({ where: { id: { equals: deal.id } }, data: { ownerId: body.ownerId } });
-        addInteraction({
-          dealId: deal.id,
-          type: "note",
-          summary: `Assigned to ${userName(body.ownerId)}`,
-          userId: user.id,
-        });
-        if (body.ownerId) {
-          // Open items follow the owner. A newly assigned opportunity lands in their My Day.
-          db.myDay.updateMany({
-            where: { dealId: { equals: deal.id }, state: { notEquals: "handled" } },
-            data: { userId: body.ownerId },
-          });
-          if (wasUnassigned) {
-            const contact = db.contact.findFirst({
-              where: { id: { equals: deal.primaryContactId } },
-            });
-            const days = Math.max(
-              1,
-              Math.round((getNow().getTime() - new Date(deal.createdAt).getTime()) / 86_400_000),
-            );
-            db.myDay.create({
-              id: nextId("md"),
-              dealId: deal.id,
-              userId: body.ownerId,
-              reason: `Assigned to you. ${contact?.name ?? "The contact"} wrote in ${days} days ago and nobody has replied.`,
-              suggestedAction: "Send a first reply",
-              overdueDays: days,
-              state: "open",
-            });
-            const content = composeDraft(
-              {
-                firstName: contact?.name.split(" ")[0] ?? "",
-                company: deal.company,
-                topic: "Your request",
-                fact: "Thanks for getting in touch. I'd like to understand what you're hoping to fix.",
-                senderFirstName: userName(body.ownerId).split(" ")[0] ?? "",
-              },
-              1,
-            );
-            db.draft.create({
-              id: nextId("dr"),
-              dealId: deal.id,
-              kind: "follow_up",
-              subject: content.subject,
-              body: content.body,
-              factsUsed: content.factsUsed,
-              status: "draft",
-              version: 1,
-            });
-            db.deal.update({
-              where: { id: { equals: deal.id } },
-              data: { status: "needs_attention", nextAction: "Send a first reply" },
-            });
-          }
-        } else {
-          db.deal.update({ where: { id: { equals: deal.id } }, data: { status: "unassigned" } });
-        }
+        assignDeal(deal, body.ownerId, user.id);
       }
 
       if (body.stage !== undefined && body.stage !== deal.stage) {
+        const closing = body.stage === "won" || body.stage === "lost";
+        if (closing && !body.closeReason?.trim()) {
+          throw new ApiError(
+            400,
+            "reason_required",
+            `Say why it is ${body.stage === "won" ? "won" : "lost"} before closing it.`,
+          );
+        }
         db.deal.update({
           where: { id: { equals: deal.id } },
           data: {
             stage: body.stage,
             lastActivityAt: now,
             lastActivityNote: `Moved to ${STAGE_LABEL[body.stage]}`,
+            closeReason: closing ? (body.closeReason ?? null) : null,
+            stageChangedAt: now,
           },
         });
         addInteraction({
           dealId: deal.id,
           type: "stage_change",
-          summary: `Moved to ${STAGE_LABEL[body.stage]}`,
+          summary: `Moved to ${STAGE_LABEL[body.stage]}${closing ? `: ${body.closeReason}` : ""}`,
           userId: user.id,
+          fromStage: deal.stage,
+          toStage: body.stage,
         });
+        addAudit({
+          userId: user.id,
+          dealId: deal.id,
+          action: "stage_changed",
+          summary: `Moved from ${STAGE_LABEL[deal.stage]} to ${STAGE_LABEL[body.stage]}${closing ? ` (${body.closeReason})` : ""}`,
+          via: "manual",
+        });
+        if (closing) {
+          // A closed deal leaves My Day.
+          db.myDay.updateMany({
+            where: { dealId: { equals: deal.id }, state: { notEquals: "handled" } },
+            data: { state: "handled", snoozedUntil: null },
+          });
+        }
+      }
+
+      if (body.nextActionDueAt !== undefined) {
+        db.deal.update({
+          where: { id: { equals: deal.id } },
+          data: { nextActionDueAt: body.nextActionDueAt },
+        });
+      }
+      if (body.source !== undefined) {
+        db.deal.update({ where: { id: { equals: deal.id } }, data: { source: body.source } });
       }
 
       if (body.nextAction !== undefined) {
@@ -185,11 +213,88 @@ export const dealHandlers = [
           where: { id: { equals: deal.id } },
           data: { nextAction: body.nextAction },
         });
+        addAudit({
+          userId: user.id,
+          dealId: deal.id,
+          action: "next_action_set",
+          summary: body.nextAction ? `Next action: ${body.nextAction}` : "Cleared the next action",
+          via: "manual",
+        });
       }
       if (body.blocker !== undefined) {
         db.deal.update({ where: { id: { equals: deal.id } }, data: { blocker: body.blocker } });
       }
       return toDeal(getDeal(deal.id));
+    },
+  }),
+
+  route("post", "/deals", {
+    body: CreateDealBody,
+    run: ({ user, body }) => Deal.parse(toDeal(createDeal(user.id, body))),
+  }),
+
+  // CSV import: the screen parses the file, the server validates every row and reports what it skipped.
+  route("post", "/deals/import", {
+    body: ImportDealsBody,
+    run: ({ user, body }) => {
+      const skipped: { row: number; reason: string }[] = [];
+      const seen = new Set(db.contact.getAll().map((c) => c.email.toLowerCase()));
+      let created = 0;
+      body.rows.forEach((r, i) => {
+        const email = r.contactEmail.trim().toLowerCase();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          skipped.push({ row: i + 1, reason: "Email address is not valid" });
+        } else if (seen.has(email)) {
+          skipped.push({ row: i + 1, reason: "Already in Ember" });
+        } else {
+          seen.add(email);
+          createDeal(user.id, { ...r, contactEmail: email });
+          created += 1;
+        }
+      });
+      return ImportResult.parse({ created, skipped });
+    },
+  }),
+
+  route("patch", "/contacts/:id", {
+    body: UpdateContactBody,
+    run: ({ user, params, body }) => {
+      const contact =
+        db.contact.findFirst({ where: { id: { equals: params["id"] ?? "" } } }) ??
+        notFound("The contact");
+      const deal = getDeal(contact.dealId);
+      assertCanSeeDeal(user, deal);
+      db.contact.update({
+        where: { id: { equals: contact.id } },
+        data: {
+          ...(body.role && { role: body.role }),
+          ...(body.status && { status: body.status }),
+        },
+      });
+      if (body.status === "opted_out") {
+        // Opting out closes every open item for the deal and removes pending drafts.
+        db.myDay.updateMany({
+          where: { dealId: { equals: deal.id }, state: { notEquals: "handled" } },
+          data: { state: "handled", snoozedUntil: null },
+        });
+        db.draft.deleteMany({
+          where: { dealId: { equals: deal.id }, status: { equals: "draft" } },
+        });
+        addInteraction({
+          dealId: deal.id,
+          type: "note",
+          summary: `${contact.name} opted out`,
+          userId: user.id,
+        });
+        addAudit({
+          userId: user.id,
+          dealId: deal.id,
+          action: "opted_out",
+          summary: `${contact.name} opted out. Nothing more will be drafted or sent to them.`,
+          via: "manual",
+        });
+      }
+      return toContact(db.contact.findFirst({ where: { id: { equals: contact.id } } }) ?? contact);
     },
   }),
 

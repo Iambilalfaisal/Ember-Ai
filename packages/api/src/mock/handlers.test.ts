@@ -333,6 +333,177 @@ describe("reset", () => {
   });
 });
 
+describe("the copilot data foundation", () => {
+  it("will not close a deal without a reason, and records who moved it from where", async () => {
+    expect((await failure(api.deals.update("blue-harbor", { stage: "lost" }))).status).toBe(400);
+    await api.deals.update("blue-harbor", { stage: "lost", closeReason: "Budget" });
+    const detail = await api.deals.get("blue-harbor");
+    expect(detail.deal.closeReason).toBe("Budget");
+    expect(detail.interactions[0]).toMatchObject({
+      type: "stage_change",
+      fromStage: "qualified",
+      toStage: "lost",
+      userId: "sam",
+    });
+    expect((await api.myDay.get()).items.map((i) => i.deal.id)).not.toContain("blue-harbor");
+  });
+
+  it("opting a contact out clears their My Day item and drafts, and blocks sending", async () => {
+    const detail = await api.deals.get("meridian");
+    const [draft] = await api.deals.drafts("meridian");
+    await api.contacts.update(detail.deal.primaryContactId, { status: "opted_out" });
+    expect((await api.myDay.get()).items.map((i) => i.deal.id)).not.toContain("meridian");
+    expect(await api.deals.drafts("meridian")).toEqual([]);
+    expect(draft).toBeDefined();
+    expect((await failure(api.drafts.send(draft!.id))).status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("keeps opted-out contacts out of the revival queue and counts them as excluded", async () => {
+    const before = await api.team.revival();
+    const target = before.items[0]!;
+    await api.contacts.update(target.contact.id, { status: "opted_out" });
+    const after = await api.team.revival();
+    expect(after.items.map((i) => i.deal.id)).not.toContain(target.deal.id);
+    expect(after.excludedCount).toBe(before.excludedCount + 1);
+  });
+
+  it("adds a deal in one step and imports rows, skipping bad and duplicate ones", async () => {
+    const created = await api.deals.create({
+      company: "Quill & Co",
+      contactName: "Ines Ray",
+      contactEmail: "ines@quill.example",
+      contactTitle: "COO",
+      value: 12000,
+      source: "Referral",
+      currency: "USD",
+    });
+    expect(created).toMatchObject({ stage: "discovery", ownerId: "sam", source: "Referral" });
+    const row = { contactTitle: "", value: 0, source: null, currency: "USD" };
+    const result = await api.deals.import({
+      rows: [
+        { ...row, company: "A", contactName: "A", contactEmail: "a@a.example" },
+        { ...row, company: "B", contactName: "B", contactEmail: "not-an-email" },
+        { ...row, company: "C", contactName: "C", contactEmail: "ines@quill.example" },
+      ],
+    });
+    expect(result.created).toBe(1);
+    expect(result.skipped.map((s) => s.row)).toEqual([2, 3]);
+  });
+
+  it("only a call, meeting or email counts as meaningful contact", async () => {
+    const before = (await api.deals.get("meridian")).deal.lastMeaningfulAt;
+    await api.deals.updateNotes("meridian", { blocker: "Waiting on legal" });
+    expect((await api.deals.get("meridian")).deal.lastMeaningfulAt).toBe(before);
+  });
+
+  it("keeps editable source and lost-reason lists in settings", async () => {
+    as("alex");
+    await api.settings.update({ sources: ["Inbound", "Webinar"], lostReasons: ["Price"] });
+    const settings = await api.settings.get();
+    expect(settings.sources).toEqual(["Inbound", "Webinar"]);
+    expect(settings.lostReasons).toEqual(["Price"]);
+  });
+});
+
+describe("the copilot module", () => {
+  it("builds the morning digest from the same fields My Day uses", async () => {
+    const digest = await api.copilot.digest();
+    expect(digest.counts.needYou).toBe(4);
+    expect(digest.counts.suggestions).toBe(3);
+    expect(digest.highlights.length).toBeGreaterThan(0);
+    expect(digest.nextCall?.company).toBe("Blue Harbor Logistics");
+  });
+
+  it("changes nothing until a suggestion is approved, then writes the deal, a task and an audit entry", async () => {
+    const before = await api.deals.get("solvex");
+    expect(before.deal.nextAction).toBe("Ask whether legal has questions");
+    const auditBefore = (await api.copilot.audit()).length;
+
+    const done = await api.copilot.approve("sg-solvex");
+    expect(done.state).toBe("approved");
+    const after = await api.deals.get("solvex");
+    expect(after.deal.nextAction).toBe("Call Solvex's legal lead about the order form");
+    expect(after.deal.nextActionDueAt).not.toBeNull();
+    expect(after.tasks.some((t) => t.title.includes("legal lead"))).toBe(true);
+    const log = await api.copilot.audit();
+    expect(log.length).toBe(auditBefore + 1);
+    expect(log[0]).toMatchObject({
+      via: "copilot",
+      approvedBy: "Sam Okafor",
+      action: "next_action_set",
+    });
+    expect((await failure(api.copilot.approve("sg-solvex"))).status).toBe(409);
+  });
+
+  it("dismissing a suggestion leaves the deal alone", async () => {
+    await api.copilot.dismiss("sg-ferro");
+    expect((await api.deals.get("ferro")).deal.nextAction).toBe(
+      "Check in on the security questionnaire",
+    );
+    expect(await api.deals.drafts("ferro")).toHaveLength(1);
+  });
+
+  it("will not act for a contact who opted out", async () => {
+    const detail = await api.deals.get("tarnhelm");
+    await api.contacts.update(detail.deal.primaryContactId, { status: "opted_out" });
+    expect((await failure(api.copilot.approve("sg-tarnhelm"))).status).toBe(409);
+  });
+
+  it("only a lead can approve an assignment, and it lands in the new owner's day", async () => {
+    as("priya");
+    await api.copilot.approve("sg-nimbus");
+    as("jules");
+    expect((await api.myDay.get()).items.map((i) => i.deal.id)).toContain("nimbus");
+    as("priya");
+    const log = await api.copilot.audit();
+    expect(log[0]).toMatchObject({
+      action: "owner_assigned",
+      via: "copilot",
+      approvedBy: "Priya Nair",
+    });
+  });
+
+  it("a rep sees only their own audit entries; a lead sees everyone's", async () => {
+    expect((await api.copilot.audit()).every((e) => e.approvedBy === "Sam Okafor")).toBe(true);
+    as("priya");
+    const names = new Set((await api.copilot.audit()).map((e) => e.approvedBy));
+    expect(names.size).toBeGreaterThan(1);
+  });
+
+  it("logging a call counts as real contact, creates tasks and is audited", async () => {
+    const before = (await api.deals.get("meridian")).deal.lastMeaningfulAt;
+    const result = await api.copilot.logCall("meridian", {
+      channel: "whatsapp",
+      summary: "Priya wants numbers by Friday",
+      commitments: ["Send ROI numbers", "Book the board slot"],
+      nextAction: "Send ROI numbers",
+    });
+    expect(result.tasksCreated).toBe(2);
+    const after = await api.deals.get("meridian");
+    expect(after.deal.lastMeaningfulAt).not.toBe(before);
+    expect(after.deal.nextAction).toBe("Send ROI numbers");
+    expect(after.interactions[0]?.summary).toContain("WhatsApp call");
+    expect((await api.copilot.audit())[0]?.action).toBe("call_logged");
+  });
+
+  it("keeps each person's digest and reminder choices", async () => {
+    expect((await api.copilot.preferences()).digestEmail).toBe(false);
+    await api.copilot.updatePreferences({ digestEmail: true, digestHour: 7 });
+    expect(await api.copilot.preferences()).toMatchObject({ digestEmail: true, digestHour: 7 });
+    as("jules");
+    expect((await api.copilot.preferences()).digestEmail).toBe(false);
+  });
+
+  it("keeps company defaults in settings", async () => {
+    as("alex");
+    await api.settings.update({ timeZone: "Europe/London", workingDays: [1, 2, 3] });
+    expect(await api.settings.get()).toMatchObject({
+      timeZone: "Europe/London",
+      workingDays: [1, 2, 3],
+    });
+  });
+});
+
 describe("settings", () => {
   it("keeps a change", async () => {
     as("alex");

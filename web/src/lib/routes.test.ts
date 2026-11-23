@@ -34,6 +34,7 @@ describe("navigation by role", () => {
   it("shows a rep only what a rep can use", () => {
     const labels = navFor("rep").map((i) => i.label);
     expect(labels).toEqual([
+      "Copilot",
       "My Day",
       "Calls",
       "Tasks",

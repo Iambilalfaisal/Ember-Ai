@@ -13,7 +13,14 @@ import {
 import { addDays } from "date-fns";
 import { getNow } from "../clock";
 import { db, nextId } from "../db";
-import { addInteraction, assertCanSeeDeal, getCall, getDeal, markDealAttended } from "../logic";
+import {
+  addAudit,
+  addInteraction,
+  assertCanSeeDeal,
+  getCall,
+  getDeal,
+  markDealAttended,
+} from "../logic";
 import { json, toBrief, toCall, toCard, toDraft, toSegment, toSummary, toTask } from "../mappers";
 import { composeDraft } from "../seed/drafts";
 import { scenarioFor } from "../seed/scenarios";
@@ -212,6 +219,13 @@ export const callHandlers = [
         callId: call.id,
       });
       markDealAttended(deal.id, `Call: ${call.title}`);
+      addAudit({
+        userId: user.id,
+        dealId: deal.id,
+        action: "tasks_created",
+        summary: `Approved the call summary: ${createdTasks.length} ${createdTasks.length === 1 ? "task" : "tasks"} created`,
+        via: "copilot",
+      });
       db.deal.update({
         where: { id: { equals: deal.id } },
         data: { nextAction: summary.nextAction || null, blocker: summary.blocker || null },

@@ -4,9 +4,11 @@ import { SETTINGS_SECTIONS } from "@/lib/routes";
 import { SettingsNav } from "../components/SettingsNav";
 import {
   AiUsage,
+  CompanyDefaults,
   ConsentAndRetention,
   FollowUpRules,
   Integrations,
+  PickListEditors,
   SettingsData,
   UsersAndRoles,
 } from "../components/Sections";
@@ -23,6 +25,10 @@ function Section({ slug }: { slug: Slug }) {
             return <FollowUpRules settings={settings} canEdit={canEdit} />;
           case "consent-and-retention":
             return <ConsentAndRetention settings={settings} canEdit={canEdit} />;
+          case "company-defaults":
+            return <CompanyDefaults settings={settings} canEdit={canEdit} />;
+          case "sources-and-reasons":
+            return <PickListEditors settings={settings} canEdit={canEdit} />;
           case "integrations":
             return <Integrations settings={settings} />;
           case "ai-usage":

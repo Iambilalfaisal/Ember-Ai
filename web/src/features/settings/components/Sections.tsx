@@ -342,3 +342,232 @@ export function AiUsage({ settings }: { settings: Settings }) {
     </div>
   );
 }
+
+function ListEditor({
+  title,
+  help,
+  items,
+  canEdit,
+  onSave,
+  saving,
+}: {
+  title: string;
+  help: string;
+  items: string[];
+  canEdit: boolean;
+  onSave: (next: string[]) => void;
+  saving: boolean;
+}) {
+  const [list, setList] = useState(items);
+  const [draft, setDraft] = useState("");
+  const add = () => {
+    const value = draft.trim();
+    if (!value || list.some((i) => i.toLowerCase() === value.toLowerCase())) return;
+    setList([...list, value]);
+    setDraft("");
+  };
+  const changed = list.join("\n") !== items.join("\n");
+  return (
+    <section className="space-y-3" aria-label={title}>
+      <div>
+        <h3 className="text-sm font-medium text-coal">{title}</h3>
+        <p className="text-detail text-smoke">{help}</p>
+      </div>
+      <ul className="divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
+        {list.map((item) => (
+          <li key={item} className="flex h-12 items-center justify-between gap-3 px-4 text-sm">
+            <span className="text-coal">{item}</span>
+            {canEdit ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                aria-label={`Remove ${item}`}
+                disabled={list.length <= 1}
+                onClick={() => setList(list.filter((i) => i !== item))}
+              >
+                Remove
+              </Button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {canEdit ? (
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            add();
+          }}
+        >
+          <Input
+            aria-label={`Add to ${title}`}
+            placeholder="Add an item"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            className="w-64"
+          />
+          <Button type="submit" variant="secondary" disabled={!draft.trim()}>
+            Add
+          </Button>
+          <Button variant="primary" disabled={!changed || saving} onClick={() => onSave(list)}>
+            Save {title.toLowerCase()}
+          </Button>
+        </form>
+      ) : null}
+    </section>
+  );
+}
+
+export function PickListEditors({ settings, canEdit }: { settings: Settings; canEdit: boolean }) {
+  const update = useUpdateSettings();
+  const save = (body: { sources?: string[]; lostReasons?: string[] }, done: string) =>
+    update.mutate(body, {
+      onSuccess: () => toast.success(done),
+      onError: () => toast.error("Couldn't save the list. Try again."),
+    });
+  return (
+    <div className="max-w-3xl space-y-8">
+      <ReadOnlyNote canEdit={canEdit} />
+      <ListEditor
+        title="Sources"
+        help="Where an opportunity came from. Reps pick one when they add a deal."
+        items={settings.sources}
+        canEdit={canEdit}
+        saving={update.isPending}
+        onSave={(sources) => save({ sources }, "Sources saved.")}
+      />
+      <ListEditor
+        title="Lost reasons"
+        help="Reps must pick one before an opportunity can be closed as lost."
+        items={settings.lostReasons}
+        canEdit={canEdit}
+        saving={update.isPending}
+        onSave={(lostReasons) => save({ lostReasons }, "Lost reasons saved.")}
+      />
+    </div>
+  );
+}
+
+const ZONES = [
+  "Asia/Karachi",
+  "Asia/Dubai",
+  "Europe/London",
+  "Europe/Berlin",
+  "America/New_York",
+  "America/Los_Angeles",
+];
+const CURRENCIES = ["USD", "GBP", "EUR", "PKR"];
+const DAYS = [
+  { value: 1, label: "Mon" },
+  { value: 2, label: "Tue" },
+  { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" },
+  { value: 5, label: "Fri" },
+  { value: 6, label: "Sat" },
+  { value: 0, label: "Sun" },
+];
+
+/** The company-wide choices that decide when a due date lands and when the morning digest goes out. */
+export function CompanyDefaults({ settings, canEdit }: { settings: Settings; canEdit: boolean }) {
+  const update = useUpdateSettings();
+  const [zone, setZone] = useState(settings.timeZone);
+  const [currency, setCurrency] = useState(settings.defaultCurrency);
+  const [days, setDays] = useState<number[]>(settings.workingDays);
+  const changed =
+    zone !== settings.timeZone ||
+    currency !== settings.defaultCurrency ||
+    [...days].sort().join() !== [...settings.workingDays].sort().join();
+
+  return (
+    <form
+      className="max-w-3xl space-y-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!changed || days.length === 0) return;
+        update.mutate(
+          { timeZone: zone, defaultCurrency: currency, workingDays: days },
+          {
+            onSuccess: () => toast.success("Company defaults saved."),
+            onError: () => toast.error("Couldn't save the defaults. Try again."),
+          },
+        );
+      }}
+    >
+      <ReadOnlyNote canEdit={canEdit} />
+      <p className="text-sm text-smoke">
+        Ember counts due dates in working days and sends the morning digest in this time zone.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="space-y-1 text-detail text-smoke">
+          Time zone
+          <select
+            value={zone}
+            disabled={!canEdit}
+            onChange={(event) => setZone(event.target.value)}
+            className={`${selectClass} w-full`}
+          >
+            {ZONES.map((z) => (
+              <option key={z} value={z}>
+                {z.replace("_", " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-1 text-detail text-smoke">
+          Default currency
+          <select
+            value={currency}
+            disabled={!canEdit}
+            onChange={(event) => setCurrency(event.target.value)}
+            className={`${selectClass} w-full`}
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <fieldset className="space-y-2">
+        <legend className="text-detail text-smoke">Working days</legend>
+        <div className="flex flex-wrap gap-2">
+          {DAYS.map((d) => (
+            <label
+              key={d.value}
+              className="flex items-center gap-2 rounded-control border border-cinder bg-paper px-3 py-1.5 text-sm text-coal"
+            >
+              <input
+                type="checkbox"
+                checked={days.includes(d.value)}
+                disabled={!canEdit}
+                onChange={(event) =>
+                  setDays((current) =>
+                    event.target.checked
+                      ? [...current, d.value]
+                      : current.filter((v) => v !== d.value),
+                  )
+                }
+              />
+              {d.label}
+            </label>
+          ))}
+        </div>
+        {days.length === 0 ? (
+          <p role="alert" className="text-detail text-flare">
+            Choose at least one working day.
+          </p>
+        ) : null}
+      </fieldset>
+      {canEdit ? (
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!changed || days.length === 0 || update.isPending}
+        >
+          Save defaults
+        </Button>
+      ) : null}
+    </form>
+  );
+}

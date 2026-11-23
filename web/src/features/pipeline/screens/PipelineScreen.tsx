@@ -1,11 +1,13 @@
 "use client";
 
 import { useDeals, useMe, useUpdateDeal, type Deal, type Stage, type User } from "@ember/api";
-import { EmptyState, ErrorState, Input, Segmented, Skeleton } from "@ember/ui";
+import { Button, EmptyState, ErrorState, Input, Segmented, Skeleton } from "@ember/ui";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CloseReasonDialog } from "@/components/CloseReasonDialog";
 import { STAGE_LABEL } from "@/lib/stages";
 import { useUserMap } from "@/lib/useUserMap";
+import { AddDealDialog } from "../components/AddDealDialog";
 import { DealsTable } from "../components/DealsTable";
 import { PipelineBoard } from "../components/PipelineBoard";
 
@@ -21,6 +23,9 @@ export function PipelineScreen() {
   const [q, setQ] = useState("");
   // Where a deal was just dropped, shown at once while the change is saved.
   const [moved, setMoved] = useState<Record<string, Stage>>({});
+  const [adding, setAdding] = useState(false);
+  // A drop onto Won or Lost waits for a reason before anything is saved.
+  const [closing, setClosing] = useState<{ deal: Deal; stage: "won" | "lost" } | null>(null);
   const { data: me } = useMe();
   const { users, byId } = useUserMap();
   const update = useUpdateDeal();
@@ -34,10 +39,14 @@ export function PipelineScreen() {
     return stage ? { ...deal, stage } : deal;
   });
 
-  const move = (deal: Deal, stage: Stage) => {
+  const move = (deal: Deal, stage: Stage, closeReason?: string) => {
+    if ((stage === "won" || stage === "lost") && !closeReason) {
+      setClosing({ deal, stage });
+      return;
+    }
     setMoved((current) => ({ ...current, [deal.id]: stage }));
     update.mutate(
-      { id: deal.id, body: { stage } },
+      { id: deal.id, body: { stage, ...(closeReason && { closeReason }) } },
       {
         onSuccess: () => toast(`${deal.company} moved to ${STAGE_LABEL[stage]}.`),
         onError: () => toast.error(`Couldn't move ${deal.company}. Try again.`),
@@ -89,7 +98,22 @@ export function PipelineScreen() {
           onChange={(event) => setQ(event.target.value)}
           className="w-56"
         />
+        <Button variant="primary" className="ml-auto" onClick={() => setAdding(true)}>
+          Add opportunity
+        </Button>
       </div>
+      {adding ? <AddDealDialog onClose={() => setAdding(false)} /> : null}
+      {closing ? (
+        <CloseReasonDialog
+          company={closing.deal.company}
+          stage={closing.stage}
+          onCancel={() => setClosing(null)}
+          onConfirm={(reason) => {
+            move(closing.deal, closing.stage, reason);
+            setClosing(null);
+          }}
+        />
+      ) : null}
 
       {isPending ? (
         <div className="grid grid-cols-6 gap-3" aria-busy="true">

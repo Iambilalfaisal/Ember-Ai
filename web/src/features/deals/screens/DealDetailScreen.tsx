@@ -1,9 +1,30 @@
 "use client";
 
-import { useDeal, useMe, useUpdateDeal, type Stage, type UpdateDealBody } from "@ember/api";
-import { ErrorState, ExtractedField, HeatIndicator, Skeleton, buttonVariants, cn } from "@ember/ui";
+import {
+  contactRoles,
+  useDeal,
+  useMe,
+  useUpdateContact,
+  useUpdateDeal,
+  type ContactRole,
+  type Stage,
+  type UpdateDealBody,
+} from "@ember/api";
+import {
+  Button,
+  ErrorState,
+  ExtractedField,
+  HeatIndicator,
+  Skeleton,
+  buttonVariants,
+  cn,
+} from "@ember/ui";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
+import { CloseReasonDialog } from "@/components/CloseReasonDialog";
+import { CONTACT_ROLE_LABEL } from "@/lib/contactRoles";
+import { LogCallDialog } from "@/features/copilot";
 import { TaskList } from "@/features/tasks";
 import { dateTime, money } from "@/lib/format";
 import { STAGE_LABEL, STAGES } from "@/lib/stages";
@@ -18,6 +39,9 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
   const { data: me } = useMe();
   const { users } = useUserMap();
   const update = useUpdateDeal();
+  const updateContact = useUpdateContact();
+  const [closing, setClosing] = useState<"won" | "lost" | null>(null);
+  const [logging, setLogging] = useState(false);
 
   if (isPending) {
     return (
@@ -55,7 +79,7 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="min-w-0 space-y-6">
-        <header className="space-y-3">
+        <header className="space-y-3" data-tour="deal-header">
           <div>
             <h2 className="text-xl font-semibold text-coal">{deal.company}</h2>
             <p className="text-sm text-smoke">{money(deal.value)} a year</p>
@@ -65,12 +89,11 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
               Stage
               <select
                 value={deal.stage}
-                onChange={(event) =>
-                  save(
-                    { stage: event.target.value as Stage },
-                    `${deal.company} moved to ${STAGE_LABEL[event.target.value as Stage]}.`,
-                  )
-                }
+                onChange={(event) => {
+                  const stage = event.target.value as Stage;
+                  if (stage === "won" || stage === "lost") setClosing(stage);
+                  else save({ stage }, `${deal.company} moved to ${STAGE_LABEL[stage]}.`);
+                }}
                 className={selectClass}
               >
                 {STAGES.map((stage) => (
@@ -109,8 +132,43 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
               </p>
             )}
             <HeatIndicator heat={deal.heat} showLabel lastActivity={deal.lastActivityNote} />
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={contacts.every((c) => c.status === "opted_out")}
+              onClick={() => setLogging(true)}
+            >
+              Log a call
+            </Button>
           </div>
         </header>
+
+        {logging ? (
+          <LogCallDialog
+            dealId={deal.id}
+            company={deal.company}
+            onClose={() => setLogging(false)}
+          />
+        ) : null}
+
+        {closing ? (
+          <CloseReasonDialog
+            company={deal.company}
+            stage={closing}
+            busy={update.isPending}
+            onCancel={() => setClosing(null)}
+            onConfirm={(closeReason) => {
+              save({ stage: closing, closeReason }, `${deal.company} closed as ${closing}.`);
+              setClosing(null);
+            }}
+          />
+        ) : null}
+
+        {deal.closeReason ? (
+          <p className="text-sm text-smoke">
+            Closed: <span className="text-coal">{deal.closeReason}</span>
+          </p>
+        ) : null}
 
         <section
           aria-label="Where it stands"
@@ -180,8 +238,15 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
           </h3>
           <ul className="mt-1 divide-y divide-cinder overflow-hidden rounded-panel border border-cinder bg-paper shadow-card">
             {contacts.map((contact) => (
-              <li key={contact.id} className="px-4 py-2">
-                <p className="text-sm font-medium text-coal">{contact.name}</p>
+              <li key={contact.id} className="space-y-1 px-4 py-2">
+                <p className="text-sm font-medium text-coal">
+                  {contact.name}
+                  {contact.status === "opted_out" ? (
+                    <span className="ml-2 rounded-control border border-flare px-1.5 py-0.5 text-detail font-normal text-flare">
+                      Opted out
+                    </span>
+                  ) : null}
+                </p>
                 <p className="text-detail text-smoke">{contact.title}</p>
                 <a
                   href={`mailto:${contact.email}`}
@@ -189,6 +254,58 @@ export function DealDetailScreen({ dealId }: { dealId: string }) {
                 >
                   {contact.email}
                 </a>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <select
+                    aria-label={`Role of ${contact.name}`}
+                    value={contact.role}
+                    onChange={(event) =>
+                      updateContact.mutate(
+                        { id: contact.id, body: { role: event.target.value as ContactRole } },
+                        { onError: () => toast.error("Couldn't change the role. Try again.") },
+                      )
+                    }
+                    className={selectClass}
+                  >
+                    {contactRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {CONTACT_ROLE_LABEL[role]}
+                      </option>
+                    ))}
+                  </select>
+                  {contact.status === "active" ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={updateContact.isPending}
+                      onClick={() =>
+                        updateContact.mutate(
+                          { id: contact.id, body: { status: "opted_out" } },
+                          {
+                            onSuccess: () =>
+                              toast(`${contact.name} opted out. Ember will not contact them.`),
+                            onError: () => toast.error("Couldn't save that. Try again."),
+                          },
+                        )
+                      }
+                    >
+                      Mark opted out
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={updateContact.isPending}
+                      onClick={() =>
+                        updateContact.mutate(
+                          { id: contact.id, body: { status: "active" } },
+                          { onError: () => toast.error("Couldn't save that. Try again.") },
+                        )
+                      }
+                    >
+                      Allow contact again
+                    </Button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

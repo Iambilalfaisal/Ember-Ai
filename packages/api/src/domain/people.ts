@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Role } from "./common";
+import { ContactRole, ContactStatus, Role } from "./common";
 
 export const User = z.object({
   id: z.string(),
@@ -17,5 +17,7 @@ export const Contact = z.object({
   title: z.string(),
   email: z.string(),
   phone: z.string().nullable(),
+  role: ContactRole.default("other"),
+  status: ContactStatus.default("active"),
 });
 export type Contact = z.infer<typeof Contact>;

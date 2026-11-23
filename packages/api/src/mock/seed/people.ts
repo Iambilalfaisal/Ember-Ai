@@ -47,6 +47,8 @@ type DealSeed = {
   createdDaysAgo: number;
 };
 
+const SOURCES = ["Inbound", "Outbound", "Referral", "Event", "Partner"];
+
 const DEALS: DealSeed[] = [
   {
     id: "meridian",
@@ -228,6 +230,10 @@ export function seedPeopleAndDeals(ctx: SeedContext): void {
       title: deal.contact.title,
       email: `${slug(deal.contact.name)}@${slug(deal.company)}.example`,
       phone: faker.phone.number({ style: "international" }),
+      role: /\b(COO|CEO|CFO|Chief|Finance Director)\b/.test(deal.contact.title)
+        ? "decision_maker"
+        : "champion",
+      status: deal.status === "declined" ? "opted_out" : "active",
     });
     db.deal.create({
       id: deal.id,
@@ -245,9 +251,41 @@ export function seedPeopleAndDeals(ctx: SeedContext): void {
       originalNeed: deal.originalNeed ?? null,
       wayBackIn: deal.wayBackIn ?? null,
       createdAt: daysAgo(ctx, deal.createdDaysAgo),
+      nextActionDueAt: deal.nextAction
+        ? daysAgo(ctx, Math.max(0, deal.lastActivityDaysAgo - 5))
+        : null,
+      lastMeaningfulAt: daysAgo(ctx, deal.lastActivityDaysAgo),
+      source: SOURCES[(deal.id.length + deal.value) % SOURCES.length] ?? null,
+      currency: "USD",
+      stageChangedAt: daysAgo(ctx, Math.max(1, Math.round(deal.createdDaysAgo * 0.6))),
+      closeReason:
+        deal.stage === "lost"
+          ? deal.status === "declined"
+            ? "Contact opted out"
+            : "No decision"
+          : deal.stage === "won"
+            ? "Clear ROI case"
+            : null,
     });
     // A second contact on the larger deals, so the contacts list has some depth.
-    if (deal.value >= 100000) {
+    if (deal.id === "blue-harbor") {
+      // The people on the integration call, with the part each plays in the decision.
+      for (const [n, person] of [
+        { name: "Lena Hoff", title: "IT lead", role: "influencer" },
+        { name: "Nadia Okoro", title: "CFO", role: "decision_maker" },
+      ].entries()) {
+        db.contact.create({
+          id: `c-${deal.id}-${n + 2}`,
+          dealId: deal.id,
+          name: person.name,
+          title: person.title,
+          email: `${slug(person.name)}@${slug(deal.company)}.example`,
+          phone: null,
+          role: person.role,
+          status: "active",
+        });
+      }
+    } else if (deal.value >= 100000) {
       const name = faker.person.fullName();
       db.contact.create({
         id: `c-${deal.id}-2`,
@@ -256,6 +294,8 @@ export function seedPeopleAndDeals(ctx: SeedContext): void {
         title: faker.helpers.arrayElement(["IT Lead", "Procurement Manager", "Finance Lead"]),
         email: `${slug(name)}@${slug(deal.company)}.example`,
         phone: null,
+        role: "influencer",
+        status: "active",
       });
     }
   }

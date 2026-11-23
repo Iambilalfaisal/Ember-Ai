@@ -47,7 +47,8 @@ describe("the shell", () => {
     render(<Shell userId="sam" />);
 
     expect(await screen.findByRole("heading", { level: 1, name: "My Day" })).toBeInTheDocument();
-    await waitFor(() => expect(navLabels()[0]).toBe("My Day4"));
+    await waitFor(() => expect(navLabels()).toContain("My Day4"));
+    expect(navLabels()[0]).toBe("Copilot");
     expect(navLabels().join()).not.toContain("Team view");
     expect(screen.getByRole("link", { name: /My Day/ })).toHaveAttribute("aria-current", "page");
     expect(
