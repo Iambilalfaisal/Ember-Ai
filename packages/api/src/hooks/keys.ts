@@ -19,5 +19,9 @@ export const keys = {
   scorecard: ["scorecard"] as const,
   pilot: ["pilot"] as const,
   settings: ["settings"] as const,
+  digest: ["digest"] as const,
+  suggestions: ["suggestions"] as const,
+  audit: (filters?: object) => ["audit", filters ?? {}] as const,
+  preferences: ["preferences"] as const,
   notifications: ["notifications"] as const,
 };

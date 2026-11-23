@@ -27,7 +27,7 @@ export function DemoControls() {
   const latency = usePrefs((s) => s.latency);
   const setLatency = usePrefs((s) => s.setLatency);
   const scenarioCall = calls?.find((c) => c.scenarioId);
-  const setTourStep = useUi((s) => s.setTourStep);
+  const startTour = useUi((s) => s.startTour);
 
   if (!isDemoMode()) return null;
 
@@ -84,11 +84,29 @@ export function DemoControls() {
           <Button
             className="w-full"
             onClick={() => {
-              setTourStep(0);
+              startTour("investor");
               setOpen(false);
             }}
           >
             Start the guided tour
+          </Button>
+          <Button
+            className="w-full"
+            onClick={() => {
+              startTour("morning");
+              setOpen(false);
+            }}
+          >
+            Copilot path: morning to follow-up
+          </Button>
+          <Button
+            className="w-full"
+            onClick={() => {
+              startTour("rescue");
+              setOpen(false);
+            }}
+          >
+            Copilot path: stalled-deal rescue
           </Button>
 
           {scenarioCall ? (

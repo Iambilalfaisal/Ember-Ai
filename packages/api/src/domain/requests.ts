@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ContactRole, ContactStatus } from "./common";
 import { Contact } from "./people";
 import { Deal, Draft, Task } from "./deals";
 import { CallCard, CallSummary, Commitment, TranscriptSegment } from "./calls";
@@ -18,6 +19,10 @@ export const UpdateDealBody = z.object({
   ownerId: z.string().nullable().optional(),
   nextAction: z.string().nullable().optional(),
   blocker: z.string().nullable().optional(),
+  nextActionDueAt: z.iso.datetime().nullable().optional(),
+  source: z.string().nullable().optional(),
+  /** Required when the stage becomes won or lost. */
+  closeReason: z.string().min(1).optional(),
 });
 export type UpdateDealBody = z.infer<typeof UpdateDealBody>;
 
@@ -83,5 +88,36 @@ export const UpdateSettingsBody = z.object({
   followUpDays: z.partialRecord(Stage, z.number().int()).optional(),
   recordingConsent: z.enum(["required", "announce", "off"]).optional(),
   retentionDays: z.number().int().optional(),
+  sources: z.array(z.string().min(1)).min(1).optional(),
+  lostReasons: z.array(z.string().min(1)).min(1).optional(),
+  timeZone: z.string().min(1).optional(),
+  workingDays: z.array(z.number().int().min(0).max(6)).min(1).optional(),
+  defaultCurrency: z.string().min(3).optional(),
 });
 export type UpdateSettingsBody = z.infer<typeof UpdateSettingsBody>;
+
+export const CreateDealBody = z.object({
+  company: z.string().min(1),
+  contactName: z.string().min(1),
+  contactEmail: z.string().min(1),
+  contactTitle: z.string().default(""),
+  value: z.number().nonnegative().default(0),
+  source: z.string().nullable().default(null),
+  currency: z.string().default("USD"),
+});
+export type CreateDealBody = z.infer<typeof CreateDealBody>;
+
+export const ImportDealsBody = z.object({ rows: z.array(CreateDealBody).max(500) });
+export type ImportDealsBody = z.infer<typeof ImportDealsBody>;
+
+export const ImportResult = z.object({
+  created: z.number().int(),
+  skipped: z.array(z.object({ row: z.number().int(), reason: z.string() })),
+});
+export type ImportResult = z.infer<typeof ImportResult>;
+
+export const UpdateContactBody = z.object({
+  role: ContactRole.optional(),
+  status: ContactStatus.optional(),
+});
+export type UpdateContactBody = z.infer<typeof UpdateContactBody>;

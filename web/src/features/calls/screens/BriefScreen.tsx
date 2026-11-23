@@ -1,9 +1,10 @@
 "use client";
 
-import { useBrief, useCall } from "@ember/api";
+import { useBrief, useCall, useDeal } from "@ember/api";
 import { ErrorState, Skeleton, Surface, buttonVariants, cn } from "@ember/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CONTACT_ROLE_LABEL } from "@/lib/contactRoles";
 import { CallHeader } from "../components/CallHeader";
 
 function Section({ title, items, ordered }: { title: string; items: string[]; ordered?: boolean }) {
@@ -26,6 +27,8 @@ function Section({ title, items, ordered }: { title: string; items: string[]; or
 export function BriefScreen({ callId }: { callId: string }) {
   const call = useCall(callId);
   const brief = useBrief(callId);
+  // The people on the call and the part each plays in the decision, read from the deal's contacts.
+  const deal = useDeal(call.data?.call.dealId ?? "");
 
   if (call.isPending || brief.isPending) {
     return (
@@ -74,6 +77,30 @@ export function BriefScreen({ callId }: { callId: string }) {
         <section aria-label="Account summary" className="lg:col-span-2">
           <h3 className="text-detail text-smoke">Where things stand</h3>
           <p className="mt-1 max-w-[72ch] text-sm text-coal">{b.accountSummary}</p>
+        </section>
+        <section aria-label="Who is on the call" className="lg:col-span-2">
+          <h3 className="text-detail text-smoke">Who is on the call</h3>
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {info.participants
+              .filter((p) => p.side === "client")
+              .map((p) => {
+                const contact = deal.data?.contacts.find((c) => c.name === p.name);
+                return (
+                  <li
+                    key={p.name}
+                    className="rounded-control border border-cinder bg-ash px-3 py-1.5 text-sm text-coal"
+                  >
+                    <span className="font-medium">{p.name}</span>
+                    <span className="text-smoke"> · {p.role}</span>
+                    {contact ? (
+                      <span className="ml-2 rounded-pill border border-iris/40 bg-iris-wash px-2 py-0.5 text-detail text-iris-ink">
+                        {CONTACT_ROLE_LABEL[contact.role]}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
+          </ul>
         </section>
         <Section title="Open questions" items={b.openQuestions} />
         <Section title="Commitments owed" items={b.commitments} />

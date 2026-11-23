@@ -1,6 +1,7 @@
 import { RevivalQueue, TeamView } from "../../domain";
 import { getNow } from "../clock";
 import { db } from "../db";
+import { isOptedOut } from "../logic";
 import { toContact, toDeal, toUser } from "../mappers";
 import { route } from "./shared";
 
@@ -68,7 +69,8 @@ export const teamHandlers = [
         .sort((a, b) => b.value - a.value)
         .flatMap((d) => {
           const contact = db.contact.findFirst({ where: { id: { equals: d.primaryContactId } } });
-          if (!contact || !d.originalNeed || !d.wayBackIn) return [];
+          if (!contact || contact.status === "opted_out" || !d.originalNeed || !d.wayBackIn)
+            return [];
           return [
             {
               deal: toDeal(d),
@@ -79,8 +81,9 @@ export const teamHandlers = [
           ];
         });
       const excludedCount = db.deal
-        .findMany({ where: { status: { equals: "declined" } } })
-        .filter((d) => mine(d.ownerId)).length;
+        .getAll()
+        .filter((d) => mine(d.ownerId))
+        .filter((d) => d.status === "declined" || isOptedOut(d)).length;
       return RevivalQueue.parse({ items, excludedCount });
     },
   }),

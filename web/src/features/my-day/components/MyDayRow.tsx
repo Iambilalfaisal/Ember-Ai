@@ -1,6 +1,8 @@
 import type { MyDayItem } from "@ember/api";
 import { HeatIndicator, StatusPill, cn } from "@ember/ui";
 import { CornerDownRight } from "lucide-react";
+import { contactLabel, dealSignals } from "@/lib/signals";
+import { useNow } from "@/lib/useNow";
 import { overdueLabel } from "../copy";
 
 export function MyDayRow({
@@ -12,6 +14,7 @@ export function MyDayRow({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const signals = dealSignals(item.deal, useNow());
   return (
     <button
       type="button"
@@ -35,6 +38,13 @@ export function MyDayRow({
           )}
         </span>
         <span className="mt-0.5 block text-sm text-smoke">{item.reason}</span>
+        <span className="mt-1 flex flex-wrap gap-x-3 text-detail text-smoke">
+          <span>{contactLabel(signals.daysSinceContact)}</span>
+          {signals.noNextAction ? (
+            <span className="font-medium text-coal">No next action</span>
+          ) : null}
+          <span>{signals.daysInStage}d in stage</span>
+        </span>
         <span className="mt-2 flex items-center gap-1.5 text-sm font-medium text-iris-ink">
           <CornerDownRight aria-hidden="true" className="size-4 shrink-0" />
           {item.suggestedAction}

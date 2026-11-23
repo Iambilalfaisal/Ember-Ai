@@ -46,6 +46,9 @@ export function seedReports(ctx: SeedContext): void {
         { id: "outlook", name: "Outlook", status: "connected" },
         { id: "clickup", name: "ClickUp", status: "not_connected" },
       ],
+      timeZone: "Asia/Karachi",
+      workingDays: [1, 2, 3, 4, 5],
+      defaultCurrency: "USD",
       aiUsage: { month: "This month", answers: 312, costUsd: 41.8 },
     }),
   });

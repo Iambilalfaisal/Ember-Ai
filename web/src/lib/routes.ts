@@ -8,6 +8,7 @@ import {
   Phone,
   RotateCcw,
   Settings,
+  Sparkles,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -47,6 +48,14 @@ export type NavItem = {
 
 /** The rail, in order. Each role sees only what it can use. */
 export const NAV_ITEMS: NavItem[] = [
+  {
+    href: "/copilot",
+    group: "Workspace",
+    label: "Copilot",
+    icon: Sparkles,
+    roles: EVERYONE,
+    description: "Your morning digest, what Ember suggests and what changed",
+  },
   {
     href: "/my-day",
     group: "Workspace",
@@ -131,6 +140,8 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_SECTIONS = [
   { slug: "follow-up-rules", label: "Follow-up rules" },
+  { slug: "company-defaults", label: "Company defaults" },
+  { slug: "sources-and-reasons", label: "Sources and reasons" },
   { slug: "consent-and-retention", label: "Consent and retention" },
   { slug: "integrations", label: "Integrations" },
   { slug: "users-and-roles", label: "Users and roles" },
@@ -146,6 +157,7 @@ export function groupFor(pathname: string): NavGroup | undefined {
 
 // Pages that are not in the rail. Order matters: the first pattern that matches wins.
 const OTHER_PAGES: { pattern: RegExp; title: string; roles: Role[] }[] = [
+  { pattern: /^\/copilot\/activity$/, title: "Copilot activity", roles: EVERYONE },
   { pattern: /^\/knowledge\/test$/, title: "Test console", roles: EVERYONE },
   { pattern: /^\/deals\/[^/]+$/, title: "Opportunity", roles: EVERYONE },
   { pattern: /^\/calls\/[^/]+\/review$/, title: "Review summary", roles: EVERYONE },

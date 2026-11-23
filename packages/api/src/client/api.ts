@@ -2,21 +2,29 @@ import { z } from "zod";
 import {
   ActionResult,
   ApproveSummaryResult,
+  AuditEntry,
   Call,
   CallBrief,
   CallCard,
   CallDetail,
   CallSummary,
   ContactRow,
+  Contact,
   Deal,
   DealDetail,
+  ImportResult,
   DiscoveryNotes,
+  Digest,
   Draft,
   KnowledgeAnswer,
+  LogCallResult,
+  NotificationPrefs,
+  Suggestion,
   LiveEvent,
   KnowledgeDocument,
   MyDay,
   NotificationList,
+  PickLists,
   PilotReport,
   RevivalQueue,
   Scorecard,
@@ -25,7 +33,11 @@ import {
   TaskRow,
   TeamView,
   User,
+  type CreateDealBody,
+  type LogCallBody,
   type EndCallBody,
+  type ImportDealsBody,
+  type UpdateContactBody,
   type UpdateDealBody,
   type UpdateDraftBody,
   type UpdateNotesBody,
@@ -57,6 +69,9 @@ export const api = {
     get: (id: string) => request(`/deals/${id}`, { schema: DealDetail }),
     update: (id: string, body: UpdateDealBody) =>
       request(`/deals/${id}`, { method: "PATCH", body, schema: Deal }),
+    create: (body: CreateDealBody) => request("/deals", { method: "POST", body, schema: Deal }),
+    import: (body: ImportDealsBody) =>
+      request("/deals/import", { method: "POST", body, schema: ImportResult }),
     notes: (id: string) => request(`/deals/${id}/notes`, { schema: DiscoveryNotes }),
     updateNotes: (id: string, body: UpdateNotesBody) =>
       request(`/deals/${id}/notes`, { method: "PATCH", body, schema: DiscoveryNotes }),
@@ -70,6 +85,8 @@ export const api = {
     send: (id: string) => request(`/drafts/${id}/send`, { method: "POST", schema: Draft }),
   },
   contacts: {
+    update: (id: string, body: UpdateContactBody) =>
+      request(`/contacts/${id}`, { method: "PATCH", body, schema: Contact }),
     list: (filters: { q?: string } = {}) =>
       request("/contacts", { query: filters, schema: z.array(ContactRow) }),
   },
@@ -139,8 +156,24 @@ export const api = {
   reports: {
     pilot: () => request("/reports/pilot", { schema: PilotReport }),
   },
+  copilot: {
+    digest: () => request("/copilot/digest", { schema: Digest }),
+    suggestions: () => request("/copilot/suggestions", { schema: z.array(Suggestion) }),
+    approve: (id: string) =>
+      request(`/copilot/suggestions/${id}/approve`, { method: "POST", schema: Suggestion }),
+    dismiss: (id: string) =>
+      request(`/copilot/suggestions/${id}/dismiss`, { method: "POST", schema: Suggestion }),
+    audit: (filters: { limit?: number; dealId?: string } = {}) =>
+      request("/audit", { query: filters, schema: z.array(AuditEntry) }),
+    logCall: (dealId: string, body: LogCallBody) =>
+      request(`/deals/${dealId}/log-call`, { method: "POST", body, schema: LogCallResult }),
+    preferences: () => request("/me/preferences", { schema: NotificationPrefs }),
+    updatePreferences: (body: Partial<NotificationPrefs>) =>
+      request("/me/preferences", { method: "PATCH", body, schema: NotificationPrefs }),
+  },
   settings: {
     get: () => request("/settings", { schema: Settings }),
+    lists: () => request("/settings/lists", { schema: PickLists }),
     update: (body: UpdateSettingsBody) =>
       request("/settings", { method: "PATCH", body, schema: Settings }),
   },

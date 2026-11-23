@@ -57,7 +57,7 @@ test.describe("app screens at 1280 px", () => {
 
     await nav.getByRole("link", { name: "Settings", exact: true }).click();
     const sections = page.getByRole("navigation", { name: "Settings sections" });
-    await expect(sections.getByRole("link")).toHaveCount(5);
+    await expect(sections.getByRole("link")).toHaveCount(6);
     for (const label of await sections.getByRole("link").allInnerTexts()) {
       await sections.getByRole("link", { name: label }).click();
       await page.waitForTimeout(300);
