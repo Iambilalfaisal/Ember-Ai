@@ -1,6 +1,6 @@
 "use client";
 
-import { useAudit, useDigest, useSuggestions, type Digest } from "@ember/api";
+import { useAudit, useDigest, useMe, useSuggestions, type Digest } from "@ember/api";
 import {
   Aura,
   Button,
@@ -90,6 +90,7 @@ export function CopilotScreen() {
   const digest = useDigest();
   const suggestions = useSuggestions();
   const audit = useAudit({ limit: 5 });
+  const me = useMe();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   if (digest.isPending || suggestions.isPending || audit.isPending) {
@@ -154,7 +155,7 @@ export function CopilotScreen() {
           ) : (
             <ul className="space-y-3">
               {suggestions.data.map((s) => (
-                <SuggestionCard key={s.id} suggestion={s} />
+                <SuggestionCard key={s.id} suggestion={s} showOwner={me.data?.role !== "rep"} />
               ))}
             </ul>
           )}

@@ -463,6 +463,16 @@ describe("the copilot module", () => {
     });
   });
 
+  it("a rep sees only their own suggestions; an admin sees the team's and can decide them", async () => {
+    expect((await api.copilot.suggestions()).every((s) => s.ownerName === "Sam Okafor")).toBe(true);
+    as("alex");
+    const team = await api.copilot.suggestions();
+    expect(new Set(team.map((s) => s.ownerName)).size).toBeGreaterThan(1);
+    expect((await api.copilot.digest()).counts.suggestions).toBe(5);
+    await api.copilot.approve("sg-solvex");
+    expect((await api.copilot.audit())[0]).toMatchObject({ approvedBy: "Alex Morgan" });
+  });
+
   it("a rep sees only their own audit entries; a lead sees everyone's", async () => {
     expect((await api.copilot.audit()).every((e) => e.approvedBy === "Sam Okafor")).toBe(true);
     as("priya");

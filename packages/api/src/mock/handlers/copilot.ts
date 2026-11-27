@@ -39,6 +39,7 @@ function toSuggestion(row: Row<"suggestion">): Suggestion {
     id: row.id,
     dealId: row.dealId,
     company: deal.company,
+    ownerName: userName(row.userId),
     kind: row.kind,
     title: row.title,
     why: row.why,
@@ -52,10 +53,17 @@ function toSuggestion(row: Row<"suggestion">): Suggestion {
 function getSuggestion(user: UserRow, id: string): Row<"suggestion"> {
   const row =
     db.suggestion.findFirst({ where: { id: { equals: id } } }) ?? notFound("The suggestion");
-  if (row.userId !== user.id)
+  if (user.role === "rep" && row.userId !== user.id)
     throw new ApiError(403, "forbidden", "That suggestion is for someone else.");
   return row;
 }
+
+// A rep sees their own suggestions. A lead or admin sees the whole team's and may decide any of them
+// (the audit log records who approved).
+const suggestionsFor = (user: UserRow) =>
+  user.role === "rep"
+    ? db.suggestion.findMany({ where: { userId: { equals: user.id } } })
+    : db.suggestion.getAll();
 
 const DEFAULT_PREFS = {
   digestInApp: true,
@@ -120,9 +128,7 @@ export const copilotHandlers = [
         .filter((c) => user.role !== "rep" || c.repId === user.id)
         .filter((c) => c.startsAt.slice(0, 10) === now.toISOString().slice(0, 10))
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-      const pending = db.suggestion.findMany({
-        where: { userId: { equals: user.id }, state: { equals: "pending" } },
-      }).length;
+      const pending = suggestionsFor(user).filter((s) => s.state === "pending").length;
       const revival = db.deal
         .findMany({ where: { status: { equals: "revival" } } })
         .filter((d) => mineOrAll(user, d) && !isOptedOut(d)).length;
@@ -162,7 +168,7 @@ export const copilotHandlers = [
 
   route("get", "/copilot/suggestions", {
     run: ({ user }) => {
-      const rows = db.suggestion.findMany({ where: { userId: { equals: user.id } } });
+      const rows = suggestionsFor(user);
       const order = { pending: 0, approved: 1, dismissed: 2 } as Record<string, number>;
       return z
         .array(Suggestion)
