@@ -21,14 +21,19 @@
   }
 
   /* Scrollbars are thin and quiet everywhere, in both themes, instead of the browser's default
-     (wide, arrowed, light). The dark rail gets one tinted to its own colours. */
+     (wide, arrowed, light). The dark rail hides its scrollbar: the list still scrolls with the
+     wheel, trackpad, touch and keyboard. */
   * {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--ember-smoke) 40%, transparent) transparent;
   }
 
   [data-surface="nav"] * {
-    scrollbar-color: color-mix(in srgb, var(--ember-nav-muted) 40%, transparent) transparent;
+    scrollbar-width: none;
+  }
+
+  [data-surface="nav"] *::-webkit-scrollbar {
+    display: none;
   }
 
   @supports selector(::-webkit-scrollbar) {
