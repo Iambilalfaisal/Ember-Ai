@@ -20,6 +20,40 @@
     outline-color: var(--ember-nav-accent);
   }
 
+  /* Scrollbars are thin and quiet everywhere, in both themes, instead of the browser's default
+     (wide, arrowed, light). The dark rail gets one tinted to its own colours. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ember-smoke) 40%, transparent) transparent;
+  }
+
+  [data-surface="nav"] * {
+    scrollbar-color: color-mix(in srgb, var(--ember-nav-muted) 40%, transparent) transparent;
+  }
+
+  @supports selector(::-webkit-scrollbar) {
+    @media (hover: hover) {
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        border: 3px solid transparent;
+        border-radius: 9999px;
+        background-color: color-mix(in srgb, var(--ember-smoke) 40%, transparent);
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--ember-iris);
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-track,
+      ::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+    }
+  }
+
   h1,
   h2,
   h3,

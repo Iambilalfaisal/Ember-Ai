@@ -2,14 +2,22 @@
 
 import { useApproveSuggestion, useDismissSuggestion, type Suggestion } from "@ember/api";
 import { Button, StatusPill, buttonVariants, cn } from "@ember/ui";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { dateTime } from "@/lib/format";
-import { KIND_LABEL, afterApproval } from "../copy";
+import { KIND_ICON, KIND_LABEL, afterApproval } from "../copy";
 
 /** One thing the copilot noticed. It shows why, what it rests on and exactly what approving does. */
-export function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
+export function SuggestionCard({
+  suggestion,
+  showOwner = false,
+}: {
+  suggestion: Suggestion;
+  /** A lead or admin sees the team's suggestions, so each one says whose it is. */
+  showOwner?: boolean;
+}) {
+  const Icon = KIND_ICON[suggestion.kind];
   const approve = useApproveSuggestion();
   const dismiss = useDismissSuggestion();
   const busy = approve.isPending || dismiss.isPending;
@@ -43,16 +51,21 @@ export function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
   }
 
   return (
-    <li className="rounded-panel border border-cinder bg-paper p-4 shadow-card">
+    <li className="rounded-panel border border-cinder bg-paper p-4 shadow-card transition-ui hover:-translate-y-px hover:shadow-lift">
       <div className="flex items-start gap-3">
         <span
           aria-hidden="true"
-          className="grid size-8 shrink-0 place-items-center rounded-control bg-iris-wash text-iris-ink"
+          className="grid size-9 shrink-0 place-items-center rounded-control bg-iris-wash text-iris-ink"
         >
-          <Sparkles className="size-4" />
+          <Icon className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-detail font-medium text-iris-ink">{KIND_LABEL[suggestion.kind]}</p>
+          <p className="flex flex-wrap items-center gap-x-2 text-detail font-medium text-iris-ink">
+            {KIND_LABEL[suggestion.kind]}
+            {showOwner ? (
+              <span className="font-normal text-smoke">for {suggestion.ownerName}</span>
+            ) : null}
+          </p>
           <h3 className="text-base font-semibold text-coal">
             <Link
               href={`/deals/${suggestion.dealId}`}

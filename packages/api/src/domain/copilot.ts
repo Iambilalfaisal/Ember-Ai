@@ -47,6 +47,8 @@ export const Suggestion = z.object({
   id: z.string(),
   dealId: z.string(),
   company: z.string(),
+  /** The person it is for. A lead or admin sees the whole team's, so each says whose it is. */
+  ownerName: z.string(),
   kind: SuggestionKind,
   title: z.string(),
   /** The reason, in one sentence. */

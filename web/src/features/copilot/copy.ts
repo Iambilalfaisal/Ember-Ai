@@ -24,6 +24,13 @@ export const ACTION_META: Record<AuditAction, { label: string; Icon: LucideIcon 
   deal_revived: { label: "Deal revived", Icon: RotateCcw },
 };
 
+export const KIND_ICON: Record<SuggestionKind, LucideIcon> = {
+  set_next_action: CalendarClock,
+  nudge_draft: FilePenLine,
+  revive: RotateCcw,
+  assign_owner: UserCheck,
+};
+
 export const KIND_LABEL: Record<SuggestionKind, string> = {
   set_next_action: "Set a next action",
   nudge_draft: "Prepare a follow-up",
