@@ -1593,3 +1593,162 @@ html:has(.lp) {
   transform: none;
   filter: none;
 }
+
+/* ======================================================================
+ * Deep space and ember (v2 palette)
+ * A near-black night, cool violet light for the product and one warm ember accent for every
+ * action and for the moments that matter. Contrast: text on the night is white or soft lavender;
+ * the ember buttons carry dark ink, never white on orange.
+ * ====================================================================== */
+.lp {
+  --lp-void: #05060f;
+  --lp-night: #0a0c1e;
+  --lp-violet: #8b7bff;
+  --lp-ember: #ff7a2f;
+  --lp-ember-soft: #ffb273;
+  --lp-amber: #ffc98a;
+  --lp-ink-on-ember: #1b0b03;
+}
+
+/* The 3D scene sits behind everything; a veil keeps text readable over it. */
+.lp-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.lp-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 45%, rgb(5 6 15 / 0.55), transparent 75%),
+    linear-gradient(to bottom, rgb(5 6 15 / 0.35), transparent 30%, rgb(5 6 15 / 0.45));
+}
+.lp > main,
+.lp > footer {
+  position: relative;
+  z-index: 1;
+}
+
+.lp-progress {
+  background: linear-gradient(90deg, #6d4bff, #b3a7ff, var(--lp-ember));
+}
+.lp-nav {
+  background: rgb(5 6 15 / 0.62);
+}
+.lp-logo-mark {
+  background: linear-gradient(135deg, #5b3fd9, #ff7a2f);
+  box-shadow: 0 0 26px rgb(255 122 47 / 0.45);
+}
+
+/* The one warm action colour */
+.lp-btn-primary {
+  color: var(--lp-ink-on-ember);
+  background: linear-gradient(135deg, #ffb273, #ff7a2f);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.35),
+    0 10px 40px -8px rgb(255 122 47 / 0.75);
+}
+.lp-btn-primary:hover {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.5),
+    0 18px 56px -6px rgb(255 140 70 / 0.95);
+}
+
+/* Hero light: less purple haze, more depth */
+.lp-blob-a {
+  background: #3a2bb8;
+  opacity: 0.32;
+}
+.lp-blob-b {
+  background: #12308f;
+  opacity: 0.3;
+}
+.lp-blob-c {
+  background: #ff6a2b;
+  opacity: 0.14;
+}
+.lp-spot {
+  background: radial-gradient(
+    560px circle at var(--mx) var(--my),
+    rgb(255 140 80 / 0.14),
+    rgb(139 123 255 / 0.1) 40%,
+    transparent 66%
+  );
+}
+.lp-shine {
+  background: linear-gradient(100deg, #b3a7ff 0%, #fff 30%, #ffb273 52%, #ff7a2f 70%, #b3a7ff 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lp-ember {
+  background: var(--lp-ember-soft);
+  box-shadow: 0 0 12px 3px rgb(255 122 47 / 0.7);
+}
+
+/* Cards: glass over the scene, ember edge on hover */
+.lp-tile,
+.lp-card,
+.lp-stat,
+.lp-win {
+  background-color: rgb(12 14 34 / 0.72);
+  backdrop-filter: blur(10px);
+}
+.lp-tile {
+  transition:
+    transform 0.5s var(--lp-ease),
+    border-color 0.4s,
+    box-shadow 0.5s;
+}
+.lp-tile:hover {
+  transform: perspective(900px) translateY(-6px) rotateX(2.5deg);
+  border-color: rgb(255 122 47 / 0.5);
+  box-shadow:
+    0 30px 70px -30px rgb(255 122 47 / 0.45),
+    0 0 0 1px rgb(255 122 47 / 0.2);
+}
+.lp-stat-n {
+  background: linear-gradient(180deg, #fff, #ffb273);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* The closing call to action: night to ember */
+.lp-final {
+  background: linear-gradient(135deg, #0f0c3a 0%, #3a1a6e 52%, #a2381f 100%);
+  box-shadow: 0 50px 140px -40px rgb(255 122 47 / 0.55);
+}
+
+/* Scroll-driven reveals in browsers that support them (progressive: the page reads without) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-tile,
+    .lp-stat {
+      animation: lp-depth linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+    @keyframes lp-depth {
+      from {
+        opacity: 0.2;
+        transform: perspective(900px) translateY(60px) rotateX(14deg) scale(0.94);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(900px) translateY(0) rotateX(0) scale(1);
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-scene {
+    opacity: 0.8;
+  }
+}

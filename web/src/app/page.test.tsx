@@ -72,4 +72,14 @@ describe("the landing page", () => {
     renderHome("priya");
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/team"));
   });
+
+  it("keeps the 3D backdrop out of the accessibility tree and still renders without WebGL", () => {
+    const { container } = renderHome();
+    const scene = container.querySelector("canvas.lp-scene");
+    expect(scene).not.toBeNull();
+    expect(scene).toHaveAttribute("aria-hidden", "true");
+    // jsdom has no WebGL, so the scene switches itself off and the page stays complete.
+    expect(scene).toHaveAttribute("data-scene", "off");
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+  });
 });

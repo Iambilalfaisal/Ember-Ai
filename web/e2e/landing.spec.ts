@@ -111,3 +111,14 @@ for (const scheme of ["light", "dark"] as const) {
     expect(violations).toEqual([]);
   });
 }
+
+test("the 3D backdrop is decorative and the page is complete either way", async ({ page }) => {
+  await page.goto("/");
+  const scene = page.locator("canvas.lp-scene");
+  await expect(scene).toHaveAttribute("aria-hidden", "true");
+  await expect(scene).toHaveAttribute("data-scene", /^(live|still|off)$/);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(scene).toHaveAttribute("data-scene", /^(still|off)$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});

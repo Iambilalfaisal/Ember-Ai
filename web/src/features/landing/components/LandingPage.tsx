@@ -7,6 +7,7 @@ import "../landing.css";
 import { useLandingMotion } from "./hooks";
 import { Hero } from "./Hero";
 import { Logo } from "./scenes";
+import { Scene3D } from "./Scene3D";
 import { FinalCta, Marquee, Modules, Problem, Proof, Story, Trust } from "./Sections";
 
 /** The public front door: tells the story of Ember, then opens the live demo. */
@@ -17,6 +18,8 @@ export function LandingPage() {
   return (
     <div className="lp" ref={root} data-surface="nav">
       <SignedInRedirect />
+      <Scene3D />
+      <div className="lp-veil" aria-hidden="true" />
       <div className="lp-progress" aria-hidden="true" />
       <a href="#main" className="lp-skip">
         Skip to content
